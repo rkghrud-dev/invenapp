@@ -1,0 +1,10 @@
+*.iml
+.gradle/
+local.properties
+/build/
+/app/build/
+/captures/
+.idea/
+/tmp_auth_aar/
+/app/src/main/assets/google_oauth_client.json
+/app/src/main/assets/google_token_seed.json

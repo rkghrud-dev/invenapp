@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="alabaster_grey">#10140F</color>
+    <color name="tea_green">#314126</color>
+    <color name="yellow_green">#475C26</color>
+    <color name="lime_moss">#9EC454</color>
+    <color name="ebony">#F1F5E9</color>
+    <color name="brand_ink">#2A3424</color>
+    <color name="surface_light">#161C14</color>
+    <color name="card_surface">#1C231A</color>
+    <color name="input_surface">#222A20</color>
+    <color name="chip_surface">#2A3522</color>
+    <color name="card_stroke">#664D5E43</color>
+    <color name="text_secondary">#B3D6E0CC</color>
+    <color name="text_hint">#80D6E0CC</color>
+</resources>
