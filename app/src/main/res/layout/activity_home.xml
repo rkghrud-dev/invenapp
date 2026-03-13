@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -18,19 +18,52 @@
             android:background="@drawable/bg_card_tinted"
             android:orientation="vertical"
             android:padding="24dp">
-            <TextView
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/home_title"
-                android:textColor="@color/ebony"
-                android:textSize="32sp"
-                android:textStyle="bold" />
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/home_title"
+                    android:textColor="?attr/paletteTextPrimary"
+                    android:textSize="32sp"
+                    android:textStyle="bold" />
+                <LinearLayout
+                    android:id="@+id/admin_entry"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_status_chip"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingLeft="14dp"
+                    android:paddingTop="10dp"
+                    android:paddingRight="14dp"
+                    android:paddingBottom="10dp">
+                    <ImageView
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:src="@android:drawable/ic_lock_lock" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="8dp"
+                        android:text="@string/home_admin_entry"
+                        android:textColor="?attr/paletteTextPrimary"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </LinearLayout>
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:text="@string/home_subtitle"
-                android:textColor="@color/text_secondary"
+                android:textColor="?attr/paletteTextSecondary"
                 android:textSize="15sp" />
             <TextView
                 android:id="@+id/home_status_chip"
@@ -42,7 +75,7 @@
                 android:paddingTop="10dp"
                 android:paddingRight="14dp"
                 android:paddingBottom="10dp"
-                android:textColor="@color/ebony"
+                android:textColor="?attr/paletteTextPrimary"
                 android:textSize="13sp" />
         </LinearLayout>
         <LinearLayout
@@ -64,7 +97,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/home_inventory_title"
-                    android:textColor="@color/ebony"
+                    android:textColor="?attr/paletteTextPrimary"
                     android:textSize="20sp"
                     android:textStyle="bold" />
                 <TextView
@@ -72,7 +105,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
                     android:text="@string/home_inventory_subtitle"
-                    android:textColor="@color/text_secondary"
+                    android:textColor="?attr/paletteTextSecondary"
                     android:textSize="14sp" />
             </LinearLayout>
             <LinearLayout
@@ -81,7 +114,7 @@
                 android:layout_height="156dp"
                 android:layout_marginLeft="12dp"
                 android:layout_weight="1"
-                android:background="@drawable/bg_card_primary"
+                android:background="@drawable/bg_card_tinted"
                 android:clickable="true"
                 android:focusable="true"
                 android:orientation="vertical"
@@ -89,16 +122,16 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/home_future_title"
-                    android:textColor="@color/ebony"
+                    android:text="@string/home_ranking_title"
+                    android:textColor="?attr/paletteTextPrimary"
                     android:textSize="20sp"
                     android:textStyle="bold" />
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
-                    android:text="@string/home_future_subtitle"
-                    android:textColor="@color/text_secondary"
+                    android:text="@string/home_ranking_subtitle"
+                    android:textColor="?attr/paletteTextSecondary"
                     android:textSize="14sp" />
             </LinearLayout>
         </LinearLayout>
@@ -121,7 +154,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/home_future_title"
-                    android:textColor="@color/ebony"
+                    android:textColor="?attr/paletteTextPrimary"
                     android:textSize="20sp"
                     android:textStyle="bold" />
                 <TextView
@@ -129,7 +162,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
                     android:text="@string/home_future_subtitle"
-                    android:textColor="@color/text_secondary"
+                    android:textColor="?attr/paletteTextSecondary"
                     android:textSize="14sp" />
             </LinearLayout>
             <LinearLayout
@@ -147,7 +180,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/home_future_title"
-                    android:textColor="@color/ebony"
+                    android:textColor="?attr/paletteTextPrimary"
                     android:textSize="20sp"
                     android:textStyle="bold" />
                 <TextView
@@ -155,7 +188,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
                     android:text="@string/home_future_subtitle"
-                    android:textColor="@color/text_secondary"
+                    android:textColor="?attr/paletteTextSecondary"
                     android:textSize="14sp" />
             </LinearLayout>
         </LinearLayout>
@@ -178,7 +211,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/home_future_title"
-                    android:textColor="@color/ebony"
+                    android:textColor="?attr/paletteTextPrimary"
                     android:textSize="20sp"
                     android:textStyle="bold" />
                 <TextView
@@ -186,7 +219,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
                     android:text="@string/home_future_subtitle"
-                    android:textColor="@color/text_secondary"
+                    android:textColor="?attr/paletteTextSecondary"
                     android:textSize="14sp" />
             </LinearLayout>
             <LinearLayout
@@ -204,7 +237,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/home_options_title"
-                    android:textColor="@color/ebony"
+                    android:textColor="?attr/paletteTextPrimary"
                     android:textSize="20sp"
                     android:textStyle="bold" />
                 <TextView
@@ -212,7 +245,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
                     android:text="@string/home_options_subtitle"
-                    android:textColor="@color/text_secondary"
+                    android:textColor="?attr/paletteTextSecondary"
                     android:textSize="14sp" />
             </LinearLayout>
         </LinearLayout>

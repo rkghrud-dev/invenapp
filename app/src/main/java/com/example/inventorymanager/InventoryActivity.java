@@ -63,7 +63,7 @@ public class InventoryActivity extends ThemedActivity {
         resultsList.setEmptyView(emptyView);
 
         searchButton.setOnClickListener(view -> runSearch());
-        optionsButton.setOnClickListener(view -> startActivity(new Intent(this, SettingsActivity.class)));
+        optionsButton.setOnClickListener(view -> startActivity(new Intent(this, OptionsActivity.class)));
         searchInput.setOnEditorActionListener(this::handleEditorAction);
 
         updateConfigSummary();

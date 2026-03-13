@@ -20,11 +20,12 @@ public class HomeActivity extends ThemedActivity {
         statusChip = findViewById(R.id.home_status_chip);
 
         findViewById(R.id.module_inventory).setOnClickListener(v -> openInventory());
-        findViewById(R.id.module_shipping).setOnClickListener(this::showFutureMessage);
+        findViewById(R.id.module_shipping).setOnClickListener(v -> openSalesRanking());
         findViewById(R.id.module_orders).setOnClickListener(this::showFutureMessage);
         findViewById(R.id.module_clients).setOnClickListener(this::showFutureMessage);
         findViewById(R.id.module_reports).setOnClickListener(this::showFutureMessage);
         findViewById(R.id.module_options).setOnClickListener(v -> openOptions());
+        findViewById(R.id.admin_entry).setOnClickListener(v -> openAdminMode());
 
         updateHomeStatus();
     }
@@ -39,8 +40,16 @@ public class HomeActivity extends ThemedActivity {
         startActivity(new Intent(this, InventoryActivity.class));
     }
 
+    private void openSalesRanking() {
+        startActivity(new Intent(this, SalesRankingActivity.class));
+    }
+
     private void openOptions() {
-        startActivity(new Intent(this, SettingsActivity.class));
+        startActivity(new Intent(this, OptionsActivity.class));
+    }
+
+    private void openAdminMode() {
+        startActivity(new Intent(this, SettingsLockActivity.class));
     }
 
     private void showFutureMessage(View view) {

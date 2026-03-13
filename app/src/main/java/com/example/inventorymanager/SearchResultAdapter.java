@@ -8,14 +8,17 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
 public class SearchResultAdapter extends BaseAdapter {
+    private final Context context;
     private final LayoutInflater inflater;
     private final List<InventoryItem> items = new ArrayList<>();
 
     public SearchResultAdapter(Context context) {
+        this.context = context;
         inflater = LayoutInflater.from(context);
     }
 
@@ -54,9 +57,28 @@ public class SearchResultAdapter extends BaseAdapter {
         }
 
         InventoryItem item = getItem(position);
+        boolean actualStockAlert = isZeroOrBelow(item.getActualStockQuantity());
+
         holder.productName.setText(primaryTitle(item));
-        holder.stockQuantity.setText(valueOrFallback(item.getStockQuantity(), "-"));
+        holder.actualStockBadge.setText(buildBadgeText(
+                context.getString(R.string.result_actual_stock_label),
+                item.getActualStockQuantity(),
+                context.getString(R.string.result_unavailable_value)
+        ));
+        holder.actualStockBadge.setBackgroundResource(actualStockAlert
+                ? R.drawable.bg_stock_badge_alert
+                : R.drawable.bg_stock_badge);
         holder.matchReason.setText(valueOrFallback(item.getMatchReason(), "일치 항목"));
+        holder.currentStockQuantity.setText(buildLabeledText(
+                context.getString(R.string.result_stock_label),
+                item.getStockQuantity(),
+                context.getString(R.string.result_unavailable_value)
+        ));
+        holder.todaySoldQuantity.setText(buildLabeledText(
+                context.getString(R.string.result_today_sold_label),
+                item.getTodaySoldQuantity(),
+                "0"
+        ));
         holder.productCode.setText(buildLabeledText("상품코드", item.getProductCode()));
         holder.orderCode.setText(buildLabeledText("주문코드", item.getOrderCode()));
         return convertView;
@@ -74,21 +96,45 @@ public class SearchResultAdapter extends BaseAdapter {
         return label + "  " + valueOrFallback(value, "없음");
     }
 
+    private String buildLabeledText(String label, String value, String fallback) {
+        return label + "  " + valueOrFallback(value, fallback);
+    }
+
+    private String buildBadgeText(String label, String value, String fallback) {
+        return label + " " + valueOrFallback(value, fallback);
+    }
+
     private String valueOrFallback(String value, String fallback) {
         return TextUtils.isEmpty(value) ? fallback : value;
     }
 
+    private boolean isZeroOrBelow(String value) {
+        if (TextUtils.isEmpty(value)) {
+            return false;
+        }
+
+        try {
+            return new BigDecimal(value.trim()).compareTo(BigDecimal.ZERO) <= 0;
+        } catch (NumberFormatException ignored) {
+            return false;
+        }
+    }
+
     private static final class ViewHolder {
         private final TextView productName;
-        private final TextView stockQuantity;
+        private final TextView actualStockBadge;
         private final TextView matchReason;
+        private final TextView currentStockQuantity;
+        private final TextView todaySoldQuantity;
         private final TextView productCode;
         private final TextView orderCode;
 
         private ViewHolder(View root) {
             productName = root.findViewById(R.id.item_product_name);
-            stockQuantity = root.findViewById(R.id.item_stock_quantity);
+            actualStockBadge = root.findViewById(R.id.item_actual_stock_badge);
             matchReason = root.findViewById(R.id.item_match_reason);
+            currentStockQuantity = root.findViewById(R.id.item_current_stock_quantity);
+            todaySoldQuantity = root.findViewById(R.id.item_today_sold_quantity);
             productCode = root.findViewById(R.id.item_product_code);
             orderCode = root.findViewById(R.id.item_order_code);
         }

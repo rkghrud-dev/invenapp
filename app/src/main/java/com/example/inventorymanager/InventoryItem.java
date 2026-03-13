@@ -5,6 +5,8 @@ public class InventoryItem {
     private final String orderCode;
     private final String productName;
     private final String stockQuantity;
+    private final String todaySoldQuantity;
+    private final String actualStockQuantity;
     private final String matchReason;
     private final int score;
 
@@ -13,6 +15,8 @@ public class InventoryItem {
             String orderCode,
             String productName,
             String stockQuantity,
+            String todaySoldQuantity,
+            String actualStockQuantity,
             String matchReason,
             int score
     ) {
@@ -20,6 +24,8 @@ public class InventoryItem {
         this.orderCode = orderCode;
         this.productName = productName;
         this.stockQuantity = stockQuantity;
+        this.todaySoldQuantity = todaySoldQuantity;
+        this.actualStockQuantity = actualStockQuantity;
         this.matchReason = matchReason;
         this.score = score;
     }
@@ -38,6 +44,14 @@ public class InventoryItem {
 
     public String getStockQuantity() {
         return stockQuantity;
+    }
+
+    public String getTodaySoldQuantity() {
+        return todaySoldQuantity;
+    }
+
+    public String getActualStockQuantity() {
+        return actualStockQuantity;
     }
 
     public String getMatchReason() {

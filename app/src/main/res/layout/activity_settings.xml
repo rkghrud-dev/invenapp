@@ -25,8 +25,8 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/settings_title"
-                android:textColor="@color/ebony"
+                android:text="@string/admin_title"
+                android:textColor="?attr/paletteTextPrimary"
                 android:textSize="30sp"
                 android:textStyle="bold" />
 
@@ -34,8 +34,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:text="@string/settings_subtitle"
-                android:textColor="@color/text_secondary"
+                android:text="@string/admin_subtitle"
+                android:textColor="?attr/paletteTextSecondary"
                 android:textSize="14sp" />
 
         </LinearLayout>
@@ -52,7 +52,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/options_display_title"
-                android:textColor="@color/ebony"
+                android:textColor="?attr/paletteTextPrimary"
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
@@ -73,7 +73,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/options_dark_mode_title"
-                        android:textColor="@color/ebony"
+                        android:textColor="?attr/paletteTextPrimary"
                         android:textSize="16sp"
                         android:textStyle="bold" />
 
@@ -82,7 +82,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
                         android:text="@string/options_dark_mode_summary"
-                        android:textColor="@color/text_secondary"
+                        android:textColor="?attr/paletteTextSecondary"
                         android:textSize="13sp" />
 
                 </LinearLayout>
@@ -109,7 +109,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/options_google_title"
-                android:textColor="@color/ebony"
+                android:textColor="?attr/paletteTextPrimary"
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
@@ -118,7 +118,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
                 android:text="@string/options_google_summary"
-                android:textColor="@color/text_secondary"
+                android:textColor="?attr/paletteTextSecondary"
                 android:textSize="13sp" />
 
             <TextView
@@ -131,7 +131,7 @@
                 android:paddingTop="10dp"
                 android:paddingRight="14dp"
                 android:paddingBottom="10dp"
-                android:textColor="@color/ebony"
+                android:textColor="?attr/paletteTextPrimary"
                 android:textSize="14sp" />
 
             <Button
@@ -142,7 +142,7 @@
                 android:background="@drawable/bg_button_secondary"
                 android:text="@string/options_google_button"
                 android:textAllCaps="false"
-                android:textColor="@color/ebony"
+                android:textColor="?attr/paletteTextPrimary"
                 android:textSize="16sp" />
 
         </LinearLayout>
@@ -158,8 +158,173 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:text="@string/admin_tools_title"
+                android:textColor="?attr/paletteTextPrimary"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:text="@string/admin_tools_summary"
+                android:textColor="?attr/paletteTextSecondary"
+                android:textSize="13sp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/admin_mode_title"
+                        android:textColor="?attr/paletteTextPrimary"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="@string/admin_mode_summary"
+                        android:textColor="?attr/paletteTextSecondary"
+                        android:textSize="13sp" />
+
+                </LinearLayout>
+
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/admin_mode_switch"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:showText="false" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/admin_tools_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/admin_tools_note"
+                    android:textColor="?attr/paletteTextSecondary"
+                    android:textSize="14sp" />
+
+                <TextView
+                    style="@style/FormLabel"
+                    android:layout_marginTop="18dp"
+                    android:text="@string/label_ranking_spreadsheet_id" />
+
+                <EditText
+                    android:id="@+id/ranking_spreadsheet_id_input"
+                    style="@style/FormInput"
+                    android:hint="@string/hint_spreadsheet_id" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="18dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/admin_reminder_title"
+                            android:textColor="?attr/paletteTextPrimary"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="@string/admin_reminder_summary"
+                            android:textColor="?attr/paletteTextSecondary"
+                            android:textSize="13sp" />
+
+                    </LinearLayout>
+
+                    <androidx.appcompat.widget.SwitchCompat
+                        android:id="@+id/admin_reminder_switch"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:showText="false" />
+
+                </LinearLayout>
+
+                <TextView
+                    style="@style/FormLabel"
+                    android:layout_marginTop="18dp"
+                    android:text="@string/label_reminder_time" />
+
+                <EditText
+                    android:id="@+id/reminder_time_input"
+                    style="@style/FormInput"
+                    android:clickable="true"
+                    android:cursorVisible="false"
+                    android:focusable="false"
+                    android:focusableInTouchMode="false"
+                    android:hint="@string/hint_reminder_time"
+                    android:importantForAutofill="no"
+                    android:inputType="none" />
+
+                <Button
+                    android:id="@+id/data_sync_button"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:layout_marginTop="18dp"
+                    android:background="@drawable/bg_button_primary"
+                    android:text="@string/data_sync_button"
+                    android:textAllCaps="false"
+                    android:textColor="@android:color/white"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/data_sync_status"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:textColor="?attr/paletteTextSecondary"
+                    android:textSize="14sp" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/bg_card_primary"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 android:text="@string/settings_note"
-                android:textColor="@color/text_secondary"
+                android:textColor="?attr/paletteTextSecondary"
                 android:textSize="14sp" />
 
             <TextView
@@ -217,6 +382,51 @@
                 style="@style/FormInput"
                 android:hint="@string/hint_column" />
 
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="@string/settings_sales_note"
+                android:textColor="?attr/paletteTextSecondary"
+                android:textSize="14sp" />
+
+            <TextView
+                style="@style/FormLabel"
+                android:layout_marginTop="18dp"
+                android:text="@string/label_sales_spreadsheet_id" />
+
+            <EditText
+                android:id="@+id/sales_spreadsheet_id_input"
+                style="@style/FormInput"
+                android:hint="@string/hint_spreadsheet_id" />
+
+            <TextView
+                style="@style/FormLabel"
+                android:text="@string/label_sales_range" />
+
+            <EditText
+                android:id="@+id/sales_range_input"
+                style="@style/FormInput"
+                android:hint="@string/hint_sales_range" />
+
+            <TextView
+                style="@style/FormLabel"
+                android:text="@string/label_sales_product_code_column" />
+
+            <EditText
+                android:id="@+id/sales_product_code_column_input"
+                style="@style/FormInput"
+                android:hint="@string/hint_column" />
+
+            <TextView
+                style="@style/FormLabel"
+                android:text="@string/label_sales_quantity_column" />
+
+            <EditText
+                android:id="@+id/sales_quantity_column_input"
+                style="@style/FormInput"
+                android:hint="@string/hint_column" />
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -231,7 +441,7 @@
                     android:background="@drawable/bg_button_secondary"
                     android:text="@string/example_button"
                     android:textAllCaps="false"
-                    android:textColor="@color/ebony"
+                    android:textColor="?attr/paletteTextPrimary"
                     android:textSize="16sp" />
 
                 <Button
@@ -253,7 +463,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="14dp"
-                android:textColor="@color/text_secondary"
+                android:textColor="?attr/paletteTextSecondary"
                 android:textSize="14sp" />
 
         </LinearLayout>

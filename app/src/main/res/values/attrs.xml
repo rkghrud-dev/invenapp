@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <attr name="paletteScreenStart" format="color" />
+    <attr name="paletteScreenEnd" format="color" />
+    <attr name="paletteCardPrimary" format="color" />
+    <attr name="paletteCardStroke" format="color" />
+    <attr name="paletteCardTintStart" format="color" />
+    <attr name="paletteCardTintEnd" format="color" />
+    <attr name="paletteInputSurface" format="color" />
+    <attr name="paletteChipSurface" format="color" />
+    <attr name="paletteTextPrimary" format="color" />
+    <attr name="paletteTextSecondary" format="color" />
+    <attr name="paletteTextHint" format="color" />
+    <attr name="paletteButtonPrimary" format="color" />
+    <attr name="paletteButtonSecondaryBackground" format="color" />
+    <attr name="paletteButtonSecondaryStroke" format="color" />
+    <attr name="paletteButtonConnectedStart" format="color" />
+    <attr name="paletteButtonConnectedEnd" format="color" />
+    <attr name="paletteStockBadge" format="color" />
+    <attr name="paletteAlert" format="color" />
+</resources>

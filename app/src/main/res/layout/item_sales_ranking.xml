@@ -13,69 +13,54 @@
         android:orientation="horizontal">
 
         <TextView
-            android:id="@+id/item_product_name"
-            android:layout_width="0dp"
+            android:id="@+id/item_rank_badge"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:background="@drawable/bg_status_chip"
+            android:paddingLeft="12dp"
+            android:paddingTop="8dp"
+            android:paddingRight="12dp"
+            android:paddingBottom="8dp"
             android:textColor="?attr/paletteTextPrimary"
-            android:textSize="18sp"
+            android:textSize="14sp"
             android:textStyle="bold" />
 
         <TextView
-            android:id="@+id/item_actual_stock_badge"
+            android:id="@+id/item_display_name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="12dp"
+            android:layout_weight="1"
+            android:textColor="?attr/paletteTextPrimary"
+            android:textSize="17sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/item_sales_count_badge"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="@drawable/bg_stock_badge"
-            android:paddingLeft="14dp"
+            android:paddingLeft="12dp"
             android:paddingTop="8dp"
-            android:paddingRight="14dp"
+            android:paddingRight="12dp"
             android:paddingBottom="8dp"
             android:textColor="@android:color/white"
-            android:textSize="15sp"
+            android:textSize="14sp"
             android:textStyle="bold" />
 
     </LinearLayout>
 
     <TextView
-        android:id="@+id/item_match_reason"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:background="@drawable/bg_status_chip"
-        android:paddingLeft="10dp"
-        android:paddingTop="6dp"
-        android:paddingRight="10dp"
-        android:paddingBottom="6dp"
-        android:textColor="?attr/paletteTextPrimary"
-        android:textSize="12sp" />
-
-    <TextView
-        android:id="@+id/item_current_stock_quantity"
+        android:id="@+id/item_sales_qty_sum"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="14dp"
+        android:layout_marginTop="12dp"
         android:textColor="?attr/paletteTextPrimary"
         android:textSize="15sp"
         android:textStyle="bold" />
 
     <TextView
-        android:id="@+id/item_today_sold_quantity"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="6dp"
-        android:textColor="?attr/paletteTextSecondary"
-        android:textSize="14sp" />
-
-    <TextView
         android:id="@+id/item_product_code"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:textColor="?attr/paletteTextSecondary"
-        android:textSize="14sp" />
-
-    <TextView
-        android:id="@+id/item_order_code"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="6dp"

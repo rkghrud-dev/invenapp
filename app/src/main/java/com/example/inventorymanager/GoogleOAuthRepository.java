@@ -152,20 +152,40 @@ public class GoogleOAuthRepository {
     }
 
     private void bootstrapFromAssetsIfNeeded() throws IOException {
-        if (!TextUtils.isEmpty(preferences.getString(KEY_REFRESH_TOKEN, ""))) {
-            return;
-        }
-
         JSONObject seed = readAssetJson(ASSET_TOKEN_SEED);
-        String refreshToken = seed.optString("refresh_token", "").trim();
-        if (TextUtils.isEmpty(refreshToken)) {
+        String seedRefreshToken = seed.optString("refresh_token", "").trim();
+        String storedRefreshToken = preferences.getString(KEY_REFRESH_TOKEN, "").trim();
+
+        if (TextUtils.isEmpty(seedRefreshToken)) {
+            if (!TextUtils.isEmpty(storedRefreshToken)) {
+                return;
+            }
             throw new IOException("PC 앱의 저장된 Google refresh token을 찾지 못했습니다.");
         }
 
-        preferences.edit().putString(KEY_REFRESH_TOKEN, refreshToken).apply();
+        if (seedRefreshToken.equals(storedRefreshToken)) {
+            return;
+        }
+
+        preferences.edit()
+                .putString(KEY_REFRESH_TOKEN, seedRefreshToken)
+                .remove(KEY_ACCESS_TOKEN)
+                .remove(KEY_EXPIRES_AT)
+                .remove(KEY_TOKEN_TYPE)
+                .apply();
     }
 
     private ClientConfig readClientConfig() throws IOException {
+        JSONObject seed = readAssetJson(ASSET_TOKEN_SEED);
+        String seedClientId = seed.optString("client_id", "").trim();
+        String seedClientSecret = seed.optString("client_secret", "").trim();
+        String seedTokenUri = seed.optString("token_uri", "").trim();
+        if (!TextUtils.isEmpty(seedClientId)
+                && !TextUtils.isEmpty(seedClientSecret)
+                && !TextUtils.isEmpty(seedTokenUri)) {
+            return new ClientConfig(seedClientId, seedClientSecret, seedTokenUri);
+        }
+
         JSONObject root = readAssetJson(ASSET_CLIENT_CONFIG);
         JSONObject installed = root.optJSONObject("installed");
         if (installed == null) {

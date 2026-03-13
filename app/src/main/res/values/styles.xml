@@ -1,17 +1,125 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.InventoryManager" parent="Theme.AppCompat.DayNight.NoActionBar">
-        <item name="android:windowBackground">@color/alabaster_grey</item>
-        <item name="android:statusBarColor">@color/alabaster_grey</item>
-        <item name="android:navigationBarColor">@color/alabaster_grey</item>
-        <item name="android:windowLightStatusBar">true</item>
+    <style name="Theme.InventoryManager.Base" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <item name="colorAccent">#8FB339</item>
+        <item name="colorControlActivated">#8FB339</item>
     </style>
+
+    <style name="Theme.InventoryManager.Palette1" parent="Theme.InventoryManager.Base">
+        <item name="android:windowBackground">#DADDD8</item>
+        <item name="android:statusBarColor">#DADDD8</item>
+        <item name="android:navigationBarColor">#DADDD8</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="colorAccent">#8FB339</item>
+        <item name="colorControlActivated">#8FB339</item>
+        <item name="paletteScreenStart">#F4F6F2</item>
+        <item name="paletteScreenEnd">#DADDD8</item>
+        <item name="paletteCardPrimary">#FAFBF7</item>
+        <item name="paletteCardStroke">#88C7D59F</item>
+        <item name="paletteCardTintStart">#B7CE63</item>
+        <item name="paletteCardTintEnd">#C7D59F</item>
+        <item name="paletteInputSurface">#F7F9F3</item>
+        <item name="paletteChipSurface">#EAF0D8</item>
+        <item name="paletteTextPrimary">#4B5842</item>
+        <item name="paletteTextSecondary">#A64B5842</item>
+        <item name="paletteTextHint">#804B5842</item>
+        <item name="paletteButtonPrimary">#4B5842</item>
+        <item name="paletteButtonSecondaryBackground">#FAFBF7</item>
+        <item name="paletteButtonSecondaryStroke">#8FB339</item>
+        <item name="paletteButtonConnectedStart">#4B5842</item>
+        <item name="paletteButtonConnectedEnd">#8FB339</item>
+        <item name="paletteStockBadge">#8FB339</item>
+        <item name="paletteAlert">#C94F4F</item>
+    </style>
+
+    <style name="Theme.InventoryManager.Palette2" parent="Theme.InventoryManager.Base">
+        <item name="android:windowBackground">#F7E6E5</item>
+        <item name="android:statusBarColor">#F7E6E5</item>
+        <item name="android:navigationBarColor">#F7E6E5</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="colorAccent">#5C95FF</item>
+        <item name="colorControlActivated">#5C95FF</item>
+        <item name="paletteScreenStart">#FFF6F5</item>
+        <item name="paletteScreenEnd">#F7E6E5</item>
+        <item name="paletteCardPrimary">#FFFDFC</item>
+        <item name="paletteCardStroke">#66B9E6FF</item>
+        <item name="paletteCardTintStart">#F87575</item>
+        <item name="paletteCardTintEnd">#FFA9A3</item>
+        <item name="paletteInputSurface">#FFF3F1</item>
+        <item name="paletteChipSurface">#FDE3E4</item>
+        <item name="paletteTextPrimary">#352628</item>
+        <item name="paletteTextSecondary">#A66D565A</item>
+        <item name="paletteTextHint">#806D565A</item>
+        <item name="paletteButtonPrimary">#7E6C6C</item>
+        <item name="paletteButtonSecondaryBackground">#FFFDFC</item>
+        <item name="paletteButtonSecondaryStroke">#5C95FF</item>
+        <item name="paletteButtonConnectedStart">#7E6C6C</item>
+        <item name="paletteButtonConnectedEnd">#5C95FF</item>
+        <item name="paletteStockBadge">#5C95FF</item>
+        <item name="paletteAlert">#F87575</item>
+    </style>
+
+    <style name="Theme.InventoryManager.Palette3" parent="Theme.InventoryManager.Base">
+        <item name="android:windowBackground">#D5EDF6</item>
+        <item name="android:statusBarColor">#D5EDF6</item>
+        <item name="android:navigationBarColor">#D5EDF6</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="colorAccent">#11B5E4</item>
+        <item name="colorControlActivated">#11B5E4</item>
+        <item name="paletteScreenStart">#EAF7FB</item>
+        <item name="paletteScreenEnd">#D5EDF6</item>
+        <item name="paletteCardPrimary">#F7FCFE</item>
+        <item name="paletteCardStroke">#661481BA</item>
+        <item name="paletteCardTintStart">#1481BA</item>
+        <item name="paletteCardTintEnd">#11B5E4</item>
+        <item name="paletteInputSurface">#EEF7FA</item>
+        <item name="paletteChipSurface">#D9F0F7</item>
+        <item name="paletteTextPrimary">#033241</item>
+        <item name="paletteTextSecondary">#A6034748</item>
+        <item name="paletteTextHint">#80034748</item>
+        <item name="paletteButtonPrimary">#034748</item>
+        <item name="paletteButtonSecondaryBackground">#F7FCFE</item>
+        <item name="paletteButtonSecondaryStroke">#1481BA</item>
+        <item name="paletteButtonConnectedStart">#034748</item>
+        <item name="paletteButtonConnectedEnd">#11B5E4</item>
+        <item name="paletteStockBadge">#1481BA</item>
+        <item name="paletteAlert">#C24A55</item>
+    </style>
+
+    <style name="Theme.InventoryManager.Palette4" parent="Theme.InventoryManager.Base">
+        <item name="android:windowBackground">#F7EBDD</item>
+        <item name="android:statusBarColor">#F7EBDD</item>
+        <item name="android:navigationBarColor">#F7EBDD</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="colorAccent">#F85E00</item>
+        <item name="colorControlActivated">#F85E00</item>
+        <item name="paletteScreenStart">#FFF8F0</item>
+        <item name="paletteScreenEnd">#F7EBDD</item>
+        <item name="paletteCardPrimary">#FFFDF8</item>
+        <item name="paletteCardStroke">#66918450</item>
+        <item name="paletteCardTintStart">#F85E00</item>
+        <item name="paletteCardTintEnd">#FFB563</item>
+        <item name="paletteInputSurface">#FFF6EC</item>
+        <item name="paletteChipSurface">#F8E6D0</item>
+        <item name="paletteTextPrimary">#57371E</item>
+        <item name="paletteTextSecondary">#A66B4D33</item>
+        <item name="paletteTextHint">#806B4D33</item>
+        <item name="paletteButtonPrimary">#A41623</item>
+        <item name="paletteButtonSecondaryBackground">#FFFDF8</item>
+        <item name="paletteButtonSecondaryStroke">#F85E00</item>
+        <item name="paletteButtonConnectedStart">#A41623</item>
+        <item name="paletteButtonConnectedEnd">#F85E00</item>
+        <item name="paletteStockBadge">#F85E00</item>
+        <item name="paletteAlert">#A41623</item>
+    </style>
+
+    <style name="Theme.InventoryManager" parent="Theme.InventoryManager.Palette1" />
 
     <style name="FormLabel">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_marginTop">14dp</item>
-        <item name="android:textColor">@color/ebony</item>
+        <item name="android:textColor">?attr/paletteTextPrimary</item>
         <item name="android:textSize">14sp</item>
         <item name="android:textStyle">bold</item>
     </style>
@@ -25,8 +133,8 @@
         <item name="android:paddingTop">15dp</item>
         <item name="android:paddingRight">16dp</item>
         <item name="android:paddingBottom">15dp</item>
-        <item name="android:textColor">@color/ebony</item>
-        <item name="android:textColorHint">@color/text_hint</item>
+        <item name="android:textColor">?attr/paletteTextPrimary</item>
+        <item name="android:textColorHint">?attr/paletteTextHint</item>
         <item name="android:textSize">15sp</item>
     </style>
 </resources>

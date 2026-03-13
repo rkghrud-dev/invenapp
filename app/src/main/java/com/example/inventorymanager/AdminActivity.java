@@ -1,5 +1,6 @@
 package com.example.inventorymanager;
 
+import android.app.TimePickerDialog;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Build;
@@ -11,9 +12,9 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import androidx.appcompat.widget.SwitchCompat;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.appcompat.widget.SwitchCompat;
 
 import java.io.IOException;
 import java.util.Locale;
@@ -22,7 +23,7 @@ import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class SettingsActivity extends ThemedActivity {
+public class AdminActivity extends ThemedActivity {
     private static final int REQUEST_NOTIFICATION_PERMISSION = 4103;
 
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -83,6 +84,7 @@ public class SettingsActivity extends ThemedActivity {
         Button saveButton = findViewById(R.id.save_button);
         Button exampleButton = findViewById(R.id.example_button);
 
+        configureReminderTimePicker();
         bindSettings(settingsStore.load());
         bindAdminState();
         refreshGoogleStatus();
@@ -129,12 +131,42 @@ public class SettingsActivity extends ThemedActivity {
                 settingsStore.getAdminReminderHour(),
                 settingsStore.getAdminReminderMinute()
         ));
-        adminReminderSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> updateReminderInputState());
         updateReminderInputState();
+        adminReminderSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> updateReminderInputState());
+    }
+
+    private void configureReminderTimePicker() {
+        reminderTimeInput.setFocusable(false);
+        reminderTimeInput.setFocusableInTouchMode(false);
+        reminderTimeInput.setCursorVisible(false);
+        reminderTimeInput.setClickable(true);
+        reminderTimeInput.setOnClickListener(view -> showReminderTimePicker());
     }
 
     private void updateReminderInputState() {
-        reminderTimeInput.setEnabled(adminReminderSwitch.isChecked());
+        boolean enabled = adminReminderSwitch.isChecked();
+        reminderTimeInput.setEnabled(enabled);
+        reminderTimeInput.setAlpha(enabled ? 1f : 0.6f);
+    }
+
+    private void showReminderTimePicker() {
+        if (!adminReminderSwitch.isChecked()) {
+            return;
+        }
+
+        int[] selectedTime = parseReminderTime(reminderTimeInput.getText().toString());
+        int hour = selectedTime != null ? selectedTime[0] : settingsStore.getAdminReminderHour();
+        int minute = selectedTime != null ? selectedTime[1] : settingsStore.getAdminReminderMinute();
+
+        TimePickerDialog dialog = new TimePickerDialog(
+                this,
+                (timePicker, selectedHour, selectedMinute) ->
+                        reminderTimeInput.setText(formatReminderTime(selectedHour, selectedMinute)),
+                hour,
+                minute,
+                true
+        );
+        dialog.show();
     }
 
     private void refreshGoogleStatus() {
@@ -246,11 +278,7 @@ public class SettingsActivity extends ThemedActivity {
             reminderTime = new int[]{settingsStore.getAdminReminderHour(), settingsStore.getAdminReminderMinute()};
         }
 
-        settingsStore.save(settings);
-        settingsStore.setAdminModeEnabled(true);
-        settingsStore.setAdminReminderEnabled(adminReminderSwitch.isChecked());
-        settingsStore.setAdminReminderTime(reminderTime[0], reminderTime[1]);
-        applyReminder(reminderTime[0], reminderTime[1]);
+        persistAdminSettings(settings, reminderTime[0], reminderTime[1]);
         saveStatus.setText(R.string.settings_saved_message);
         setResult(RESULT_OK);
     }
@@ -263,7 +291,6 @@ public class SettingsActivity extends ThemedActivity {
         }
 
         settingsStore.save(settings);
-        settingsStore.setAdminModeEnabled(true);
         setResult(RESULT_OK);
         setDataSyncLoading(true);
         dataSyncStatus.setText(R.string.admin_sync_loading);
@@ -306,8 +333,16 @@ public class SettingsActivity extends ThemedActivity {
         });
     }
 
+    private void persistAdminSettings(SettingsStore.SheetSettings settings, int reminderHour, int reminderMinute) {
+        settingsStore.save(settings);
+        settingsStore.setAdminModeEnabled(true);
+        settingsStore.setAdminReminderEnabled(adminReminderSwitch.isChecked());
+        settingsStore.setAdminReminderTime(reminderHour, reminderMinute);
+        applyReminder(reminderHour, reminderMinute);
+    }
+
     private void applyReminder(int reminderHour, int reminderMinute) {
-        if (!adminReminderSwitch.isChecked()) {
+        if (!settingsStore.isAdminReminderEnabled()) {
             AdminReminderScheduler.cancelReminder(this);
             return;
         }

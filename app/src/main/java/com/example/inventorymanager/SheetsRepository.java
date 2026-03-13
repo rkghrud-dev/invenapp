@@ -11,14 +11,17 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.math.BigDecimal;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -39,19 +42,27 @@ public class SheetsRepository {
             return Collections.emptyList();
         }
 
-        String responseBody = requestSheetValues(settings, accessToken);
-        return parseAndFilter(responseBody, settings, normalizedQuery);
+        String responseBody = requestSheetValues(settings.spreadsheetId, settings.range, accessToken);
+        List<InventoryItem> matches = parseAndFilter(responseBody, settings, normalizedQuery);
+        if (matches.isEmpty()) {
+            return matches;
+        }
+
+        Map<String, BigDecimal> soldQuantityByCode = settings.isSalesReady()
+                ? loadSoldQuantityByCode(settings, accessToken)
+                : Collections.emptyMap();
+        return applySoldQuantities(matches, soldQuantityByCode);
     }
 
-    private String requestSheetValues(SettingsStore.SheetSettings settings, String accessToken) throws IOException {
+    private String requestSheetValues(String spreadsheetId, String range, String accessToken) throws IOException {
         Uri.Builder builder = new Uri.Builder()
                 .scheme("https")
                 .authority("sheets.googleapis.com")
                 .appendPath("v4")
                 .appendPath("spreadsheets")
-                .appendPath(settings.spreadsheetId)
+                .appendPath(spreadsheetId)
                 .appendPath("values")
-                .appendPath(settings.range)
+                .appendPath(range)
                 .appendQueryParameter("majorDimension", "ROWS");
 
         HttpURLConnection connection = null;
@@ -120,6 +131,8 @@ public class SheetsRepository {
                         orderCode,
                         productName,
                         stockQuantity,
+                        "0",
+                        fallbackActualStock(stockQuantity),
                         matchResult.reason,
                         matchResult.score
                 ));
@@ -130,6 +143,70 @@ public class SheetsRepository {
         } catch (JSONException exception) {
             throw new IOException("시트 응답 형식을 해석하지 못했습니다.", exception);
         }
+    }
+
+    private Map<String, BigDecimal> loadSoldQuantityByCode(SettingsStore.SheetSettings settings, String accessToken) throws IOException {
+        String responseBody = requestSheetValues(settings.salesSpreadsheetId, settings.salesRange, accessToken);
+        try {
+            JSONObject root = new JSONObject(responseBody);
+            JSONArray values = root.optJSONArray("values");
+            if (values == null || values.length() == 0) {
+                return Collections.emptyMap();
+            }
+
+            int rangeStartColumn = getRangeStartColumn(settings.salesRange);
+            int productCodeIndex = getRelativeColumnIndex(settings.salesProductCodeColumn, rangeStartColumn);
+            int salesQuantityIndex = getRelativeColumnIndex(settings.salesQuantityColumn, rangeStartColumn);
+
+            Map<String, BigDecimal> soldQuantityByCode = new HashMap<>();
+            for (int i = 0; i < values.length(); i++) {
+                JSONArray row = values.optJSONArray(i);
+                if (row == null) {
+                    continue;
+                }
+
+                String productCode = safeLower(getCell(row, productCodeIndex));
+                if (TextUtils.isEmpty(productCode)) {
+                    continue;
+                }
+
+                BigDecimal soldQuantity = parseQuantity(getCell(row, salesQuantityIndex));
+                if (soldQuantity == null) {
+                    continue;
+                }
+
+                BigDecimal previous = soldQuantityByCode.get(productCode);
+                soldQuantityByCode.put(productCode, previous == null ? soldQuantity : previous.add(soldQuantity));
+            }
+            return soldQuantityByCode;
+        } catch (JSONException exception) {
+            throw new IOException("오늘 판매 시트 응답 형식을 해석하지 못했습니다.", exception);
+        }
+    }
+
+    private List<InventoryItem> applySoldQuantities(List<InventoryItem> items, Map<String, BigDecimal> soldQuantityByCode) {
+        List<InventoryItem> enrichedItems = new ArrayList<>(items.size());
+        for (InventoryItem item : items) {
+            BigDecimal soldQuantity = BigDecimal.ZERO;
+            if (!TextUtils.isEmpty(item.getProductCode())) {
+                BigDecimal mappedQuantity = soldQuantityByCode.get(safeLower(item.getProductCode()));
+                if (mappedQuantity != null) {
+                    soldQuantity = mappedQuantity;
+                }
+            }
+
+            enrichedItems.add(new InventoryItem(
+                    item.getProductCode(),
+                    item.getOrderCode(),
+                    item.getProductName(),
+                    item.getStockQuantity(),
+                    formatQuantity(soldQuantity),
+                    calculateActualStock(item.getStockQuantity(), soldQuantity),
+                    item.getMatchReason(),
+                    item.getScore()
+            ));
+        }
+        return enrichedItems;
     }
 
     private MatchResult scoreMatch(String normalizedQuery, String productCode, String orderCode, String productName) {
@@ -258,6 +335,51 @@ public class SheetsRepository {
 
     private String safeLower(String value) {
         return value == null ? "" : value.trim().toLowerCase(Locale.ROOT);
+    }
+
+    private String calculateActualStock(String stockQuantity, BigDecimal soldQuantity) {
+        BigDecimal parsedStock = parseQuantity(stockQuantity);
+        if (parsedStock == null) {
+            return "";
+        }
+        return formatQuantity(parsedStock.subtract(soldQuantity == null ? BigDecimal.ZERO : soldQuantity));
+    }
+
+    private String fallbackActualStock(String stockQuantity) {
+        BigDecimal parsedStock = parseQuantity(stockQuantity);
+        if (parsedStock == null) {
+            return "";
+        }
+        return formatQuantity(parsedStock);
+    }
+
+    private BigDecimal parseQuantity(String value) {
+        if (TextUtils.isEmpty(value)) {
+            return null;
+        }
+
+        String normalized = value.trim().replace(",", "");
+        if (TextUtils.isEmpty(normalized)) {
+            return null;
+        }
+
+        try {
+            return new BigDecimal(normalized);
+        } catch (NumberFormatException ignored) {
+            return null;
+        }
+    }
+
+    private String formatQuantity(BigDecimal value) {
+        if (value == null) {
+            return "";
+        }
+
+        BigDecimal normalized = value.stripTrailingZeros();
+        if (normalized.scale() < 0) {
+            normalized = normalized.setScale(0);
+        }
+        return normalized.toPlainString();
     }
 
     private static final class MatchResult {
