@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_card_primary"
+    android:orientation="vertical"
+    android:padding="18dp">
+
+    <TextView
+        android:id="@+id/item_order_code"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="?attr/paletteTextPrimary"
+        android:textSize="18sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/item_reason"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:textColor="?attr/paletteTextPrimary"
+        android:textSize="15sp" />
+
+    <TextView
+        android:id="@+id/item_supply_memo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:textColor="?attr/paletteTextSecondary"
+        android:textSize="14sp" />
+
+    <TextView
+        android:id="@+id/item_result"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:textColor="?attr/paletteTextSecondary"
+        android:textSize="14sp" />
+
+    <TextView
+        android:id="@+id/item_current_feedback"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:textColor="?attr/paletteTextSecondary"
+        android:textSize="14sp" />
+
+    <CheckBox
+        android:id="@+id/item_recipient_name_toggle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:text="@string/unshipped_recipient_name_toggle"
+        android:textColor="?attr/paletteTextPrimary" />
+
+    <TextView
+        android:id="@+id/item_recipient_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:textColor="?attr/paletteTextSecondary"
+        android:textSize="14sp"
+        android:visibility="gone" />
+
+    <CheckBox
+        android:id="@+id/item_recipient_phone_toggle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:text="@string/unshipped_phone_toggle"
+        android:textColor="?attr/paletteTextPrimary" />
+
+    <TextView
+        android:id="@+id/item_recipient_phone"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:textColor="?attr/paletteTextSecondary"
+        android:textSize="14sp"
+        android:visibility="gone" />
+
+    <LinearLayout
+        android:id="@+id/item_phone_actions"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:orientation="horizontal"
+        android:visibility="gone">
+
+        <Button
+            android:id="@+id/item_call_button"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:background="@drawable/bg_button_secondary"
+            android:text="@string/unshipped_call_button"
+            android:textAllCaps="false"
+            android:textColor="?attr/paletteTextPrimary" />
+
+        <Button
+            android:id="@+id/item_sms_button"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_marginLeft="10dp"
+            android:layout_weight="1"
+            android:background="@drawable/bg_button_secondary"
+            android:text="@string/unshipped_sms_button"
+            android:textAllCaps="false"
+            android:textColor="?attr/paletteTextPrimary" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="14dp"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/item_default_feedback_button"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:background="@drawable/bg_button_primary"
+            android:text="@string/unshipped_default_feedback_button"
+            android:textAllCaps="false"
+            android:textColor="@android:color/white" />
+
+        <Button
+            android:id="@+id/item_direct_input_button"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_marginLeft="10dp"
+            android:layout_weight="1"
+            android:background="@drawable/bg_button_secondary"
+            android:text="@string/unshipped_direct_input_button"
+            android:textAllCaps="false"
+            android:textColor="?attr/paletteTextPrimary" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/item_custom_input_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <EditText
+            android:id="@+id/item_custom_feedback_input"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_input"
+            android:hint="@string/unshipped_feedback_hint"
+            android:inputType="textCapSentences|textMultiLine"
+            android:minLines="2"
+            android:paddingLeft="18dp"
+            android:paddingTop="16dp"
+            android:paddingRight="18dp"
+            android:paddingBottom="16dp"
+            android:textColor="?attr/paletteTextPrimary"
+            android:textColorHint="?attr/paletteTextHint"
+            android:textSize="15sp" />
+
+        <Button
+            android:id="@+id/item_custom_save_button"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/bg_button_secondary"
+            android:text="@string/unshipped_save_button"
+            android:textAllCaps="false"
+            android:textColor="?attr/paletteTextPrimary" />
+
+    </LinearLayout>
+
+</LinearLayout>

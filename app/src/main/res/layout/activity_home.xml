@@ -27,10 +27,10 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
+                    android:fontFamily="sans-serif-light"
                     android:text="@string/home_title"
                     android:textColor="?attr/paletteTextPrimary"
-                    android:textSize="32sp"
-                    android:textStyle="bold" />
+                    android:textSize="38sp" />
                 <LinearLayout
                     android:id="@+id/admin_entry"
                     android:layout_width="wrap_content"
@@ -58,25 +58,6 @@
                         android:textStyle="bold" />
                 </LinearLayout>
             </LinearLayout>
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="@string/home_subtitle"
-                android:textColor="?attr/paletteTextSecondary"
-                android:textSize="15sp" />
-            <TextView
-                android:id="@+id/home_status_chip"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="18dp"
-                android:background="@drawable/bg_status_chip"
-                android:paddingLeft="14dp"
-                android:paddingTop="10dp"
-                android:paddingRight="14dp"
-                android:paddingBottom="10dp"
-                android:textColor="?attr/paletteTextPrimary"
-                android:textSize="13sp" />
         </LinearLayout>
         <LinearLayout
             android:layout_width="match_parent"
@@ -109,10 +90,41 @@
                     android:textSize="14sp" />
             </LinearLayout>
             <LinearLayout
-                android:id="@+id/module_shipping"
+                android:id="@+id/module_orders"
                 android:layout_width="0dp"
                 android:layout_height="156dp"
                 android:layout_marginLeft="12dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_card_tinted"
+                android:clickable="true"
+                android:focusable="true"
+                android:orientation="vertical"
+                android:padding="20dp">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/home_unshipped_title"
+                    android:textColor="?attr/paletteTextPrimary"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="@string/home_unshipped_subtitle"
+                    android:textColor="?attr/paletteTextSecondary"
+                    android:textSize="14sp" />
+            </LinearLayout>
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:orientation="horizontal">
+            <LinearLayout
+                android:id="@+id/module_shipping"
+                android:layout_width="0dp"
+                android:layout_height="156dp"
                 android:layout_weight="1"
                 android:background="@drawable/bg_card_tinted"
                 android:clickable="true"
@@ -131,37 +143,6 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
                     android:text="@string/home_ranking_subtitle"
-                    android:textColor="?attr/paletteTextSecondary"
-                    android:textSize="14sp" />
-            </LinearLayout>
-        </LinearLayout>
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:orientation="horizontal">
-            <LinearLayout
-                android:id="@+id/module_orders"
-                android:layout_width="0dp"
-                android:layout_height="156dp"
-                android:layout_weight="1"
-                android:background="@drawable/bg_card_primary"
-                android:clickable="true"
-                android:focusable="true"
-                android:orientation="vertical"
-                android:padding="20dp">
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/home_future_title"
-                    android:textColor="?attr/paletteTextPrimary"
-                    android:textSize="20sp"
-                    android:textStyle="bold" />
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:text="@string/home_future_subtitle"
                     android:textColor="?attr/paletteTextSecondary"
                     android:textSize="14sp" />
             </LinearLayout>
@@ -228,7 +209,7 @@
                 android:layout_height="156dp"
                 android:layout_marginLeft="12dp"
                 android:layout_weight="1"
-                android:background="@drawable/bg_card_tinted"
+                android:background="@drawable/bg_card_option"
                 android:clickable="true"
                 android:focusable="true"
                 android:orientation="vertical"

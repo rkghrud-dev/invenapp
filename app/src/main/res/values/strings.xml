@@ -2,9 +2,9 @@
 <resources>
     <string name="app_name">재고관리</string>
 
-    <string name="home_title">업무 허브</string>
+    <string name="home_title">샤플라이 도우미</string>
     <string name="home_admin_entry">관리자모드</string>
-    <string name="home_subtitle">1번은 재고관리, 2번은 판매량 순위, 6번은 옵션으로 연결하고 자물쇠 버튼에서 관리자모드로 들어갑니다.</string>
+    <string name="home_subtitle">1번은 재고관리, 2번은 판매량 순위, 3번은 미출고조회, 6번은 옵션으로 연결하고 자물쇠 버튼에서 관리자모드로 들어갑니다.</string>
     <string name="home_status_with_google">Google %1$s · %2$s</string>
     <string name="home_status_no_google">Google 미확인 · %1$s</string>
     <string name="home_dark_mode_on">다크모드 켜짐</string>
@@ -13,6 +13,8 @@
     <string name="home_inventory_subtitle">상품코드, 주문코드, 한글 상품명으로 현재 재고를 바로 조회합니다.</string>
     <string name="home_ranking_title">판매량 순위</string>
     <string name="home_ranking_subtitle">오늘, 날짜별, 월별 판매갯수 순위를 Top 10·30·50으로 확인합니다.</string>
+    <string name="home_unshipped_title">미출고조회</string>
+    <string name="home_unshipped_subtitle">오늘 발주일 기준으로 발주사를 불러와 미출고 정보와 판매자 피드백을 확인합니다.</string>
     <string name="home_future_title">추후 개발</string>
     <string name="home_options_title">옵션</string>
     <string name="home_options_subtitle">다크모드처럼 화면 표시 중심 옵션을 간단히 관리합니다.</string>
@@ -63,6 +65,49 @@
     <string name="ranking_sales_count_badge">판매 %1$d건</string>
     <string name="ranking_sales_qty_sum_line">판매수량합  %1$s</string>
     <string name="ranking_product_code_line">상품코드  %1$s</string>
+
+    <string name="unshipped_title">미출고조회</string>
+    <string name="unshipped_subtitle">로드 버튼으로 오늘 발주일 데이터를 불러오고, 발주사별 미출고 정보와 결과를 확인한 뒤 판매자 피드백을 저장합니다.</string>
+    <string name="unshipped_filter_title">조회 조건</string>
+    <string name="unshipped_load_today_button">오늘 미출고 로드</string>
+    <string name="unshipped_vendor_label">발주사</string>
+    <string name="unshipped_query_button">결과 조회</string>
+    <string name="unshipped_results_title">미출고 결과</string>
+    <string name="unshipped_empty_results">오늘 조건에 맞는 미출고 정보가 없습니다.</string>
+    <string name="unshipped_summary_idle">로드 버튼으로 오늘 발주사 목록을 불러오세요.</string>
+    <string name="unshipped_summary_loaded">오늘 날짜 · 발주사 %1$d개</string>
+    <string name="unshipped_summary_vendor">오늘 날짜 · %1$s · %2$d건</string>
+    <string name="unshipped_summary_no_items">오늘 날짜 · 미출고 없음</string>
+    <string name="unshipped_status_idle">로드 버튼으로 오늘 날짜 발주사를 불러오세요.</string>
+    <string name="unshipped_status_loading">오늘 미출고 정보를 불러오는 중입니다.</string>
+    <string name="unshipped_status_loaded">오늘 발주사 %1$d개를 불러왔습니다.</string>
+    <string name="unshipped_status_no_today">오늘 날짜에 맞는 미출고 정보가 없습니다.</string>
+    <string name="unshipped_status_need_vendor">발주사를 먼저 선택하세요.</string>
+    <string name="unshipped_status_result_count">%1$s 발주사 기준 %2$d건을 찾았습니다.</string>
+    <string name="unshipped_status_no_vendor_result">선택한 발주사에 해당하는 미출고 정보가 없습니다.</string>
+    <string name="unshipped_status_sheet_not_ready">미출고 조회용 스프레드시트 ID를 먼저 확인해 주세요.</string>
+    <string name="unshipped_status_need_feedback">저장할 판매자 피드백을 입력하세요.</string>
+    <string name="unshipped_status_saving">판매자 피드백을 저장하는 중입니다.</string>
+    <string name="unshipped_status_saved">판매자 피드백을 저장했습니다.</string>
+    <string name="unshipped_none">없음</string>
+    <string name="unshipped_order_code_fallback">주문코드 없음</string>
+    <string name="unshipped_reason_line">미출고 이유  %1$s</string>
+    <string name="unshipped_supply_memo_line">샤플라이메모  %1$s</string>
+    <string name="unshipped_result_line">결과  %1$s</string>
+    <string name="unshipped_current_feedback_line">판매자 피드백  %1$s</string>
+    <string name="unshipped_recipient_name_toggle">수령인명 확인</string>
+    <string name="unshipped_phone_toggle">수령인 휴대폰 확인</string>
+    <string name="unshipped_recipient_name_line">수령인명  %1$s</string>
+    <string name="unshipped_phone_line">수령인 휴대폰  %1$s</string>
+    <string name="unshipped_call_button">전화 연결</string>
+    <string name="unshipped_sms_button">문자 메세지</string>
+    <string name="unshipped_phone_unavailable">수령인 휴대폰이 없습니다.</string>
+    <string name="unshipped_phone_action_unavailable">전화 또는 문자 앱을 열지 못했습니다.</string>
+    <string name="unshipped_default_feedback_button">송장폐기</string>
+    <string name="unshipped_default_feedback_value">송장폐기</string>
+    <string name="unshipped_direct_input_button">직접입력</string>
+    <string name="unshipped_feedback_hint">판매자 피드백 입력</string>
+    <string name="unshipped_save_button">저장</string>
 
     <string name="settings_title">옵션</string>
     <string name="settings_subtitle">화면 모드와 Google 연결, 시트 설정, 관리자 알림과 데이터 수집을 한 곳에 모았습니다.</string>
