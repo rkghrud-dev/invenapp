@@ -1,20 +1,21 @@
 package com.example.inventorymanager;
 
-import android.app.TimePickerDialog;
 import android.Manifest;
+import android.app.TimePickerDialog;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import androidx.appcompat.widget.SwitchCompat;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.appcompat.widget.SwitchCompat;
 
 import java.io.IOException;
 import java.util.Locale;
@@ -34,7 +35,9 @@ public class AdminActivity extends ThemedActivity {
     private GoogleProfileRepository googleProfileRepository;
     private SalesSyncRepository salesSyncRepository;
 
+    private SwitchCompat adminModeSwitch;
     private SwitchCompat adminReminderSwitch;
+    private View adminToolsContainer;
     private TextView googleStatusValue;
     private Button googleConnectButton;
     private EditText spreadsheetIdInput;
@@ -63,7 +66,9 @@ public class AdminActivity extends ThemedActivity {
         googleProfileRepository = new GoogleProfileRepository();
         salesSyncRepository = new SalesSyncRepository();
 
+        adminModeSwitch = findViewById(R.id.admin_mode_switch);
         adminReminderSwitch = findViewById(R.id.admin_reminder_switch);
+        adminToolsContainer = findViewById(R.id.admin_tools_container);
         googleStatusValue = findViewById(R.id.google_status_value);
         googleConnectButton = findViewById(R.id.google_connect_button);
         spreadsheetIdInput = findViewById(R.id.spreadsheet_id_input);
@@ -90,7 +95,8 @@ public class AdminActivity extends ThemedActivity {
         refreshGoogleStatus();
         dataSyncStatus.setText(R.string.admin_sync_idle);
 
-        adminReminderSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> updateReminderInputState());
+        adminModeSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> onAdminModeChanged(isChecked));
+        adminReminderSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> onAdminReminderChanged(isChecked));
         googleConnectButton.setOnClickListener(view -> checkGoogleConnection());
         saveButton.setOnClickListener(view -> saveSettings());
         exampleButton.setOnClickListener(view -> fillExample());
@@ -125,14 +131,21 @@ public class AdminActivity extends ThemedActivity {
     }
 
     private void bindAdminState() {
+        adminModeSwitch.setOnCheckedChangeListener(null);
         adminReminderSwitch.setOnCheckedChangeListener(null);
+
+        adminModeSwitch.setChecked(settingsStore.isAdminModeEnabled());
         adminReminderSwitch.setChecked(settingsStore.isAdminReminderEnabled());
         reminderTimeInput.setText(formatReminderTime(
                 settingsStore.getAdminReminderHour(),
                 settingsStore.getAdminReminderMinute()
         ));
+
+        adminModeSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> onAdminModeChanged(isChecked));
+        adminReminderSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> onAdminReminderChanged(isChecked));
+
+        updateAdminToolsState();
         updateReminderInputState();
-        adminReminderSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> updateReminderInputState());
     }
 
     private void configureReminderTimePicker() {
@@ -143,30 +156,66 @@ public class AdminActivity extends ThemedActivity {
         reminderTimeInput.setOnClickListener(view -> showReminderTimePicker());
     }
 
+    private void onAdminModeChanged(boolean isChecked) {
+        settingsStore.setAdminModeEnabled(isChecked);
+        updateAdminToolsState();
+        updateReminderInputState();
+        applyReminder(settingsStore.getAdminReminderHour(), settingsStore.getAdminReminderMinute());
+        setResult(RESULT_OK);
+    }
+
+    private void onAdminReminderChanged(boolean isChecked) {
+        settingsStore.setAdminReminderEnabled(isChecked);
+        int[] reminderTime = getReminderTimeOrSaved();
+        settingsStore.setAdminReminderTime(reminderTime[0], reminderTime[1]);
+        updateReminderInputState();
+        applyReminder(reminderTime[0], reminderTime[1]);
+        setResult(RESULT_OK);
+    }
+
+    private void updateAdminToolsState() {
+        boolean adminEnabled = adminModeSwitch.isChecked();
+        adminToolsContainer.setAlpha(adminEnabled ? 1f : 0.72f);
+        adminReminderSwitch.setEnabled(adminEnabled);
+        rankingSpreadsheetIdInput.setEnabled(adminEnabled);
+        dataSyncButton.setEnabled(adminEnabled);
+    }
+
     private void updateReminderInputState() {
-        boolean enabled = adminReminderSwitch.isChecked();
+        boolean enabled = adminModeSwitch.isChecked() && adminReminderSwitch.isChecked();
         reminderTimeInput.setEnabled(enabled);
         reminderTimeInput.setAlpha(enabled ? 1f : 0.6f);
     }
 
     private void showReminderTimePicker() {
-        if (!adminReminderSwitch.isChecked()) {
+        if (!adminModeSwitch.isChecked() || !adminReminderSwitch.isChecked()) {
             return;
         }
 
-        int[] selectedTime = parseReminderTime(reminderTimeInput.getText().toString());
-        int hour = selectedTime != null ? selectedTime[0] : settingsStore.getAdminReminderHour();
-        int minute = selectedTime != null ? selectedTime[1] : settingsStore.getAdminReminderMinute();
-
+        int[] selectedTime = getReminderTimeOrSaved();
         TimePickerDialog dialog = new TimePickerDialog(
                 this,
-                (timePicker, selectedHour, selectedMinute) ->
-                        reminderTimeInput.setText(formatReminderTime(selectedHour, selectedMinute)),
-                hour,
-                minute,
+                (timePicker, selectedHour, selectedMinute) -> {
+                    String formatted = formatReminderTime(selectedHour, selectedMinute);
+                    reminderTimeInput.setText(formatted);
+                    settingsStore.setAdminReminderTime(selectedHour, selectedMinute);
+                    applyReminder(selectedHour, selectedMinute);
+                    saveStatus.setText(getString(R.string.admin_reminder_saved, formatted));
+                    setResult(RESULT_OK);
+                },
+                selectedTime[0],
+                selectedTime[1],
                 true
         );
         dialog.show();
+    }
+
+    private int[] getReminderTimeOrSaved() {
+        int[] selectedTime = parseReminderTime(reminderTimeInput.getText().toString());
+        if (selectedTime != null) {
+            return selectedTime;
+        }
+        return new int[]{settingsStore.getAdminReminderHour(), settingsStore.getAdminReminderMinute()};
     }
 
     private void refreshGoogleStatus() {
@@ -258,7 +307,10 @@ public class AdminActivity extends ThemedActivity {
             rankingSpreadsheetIdInput.setText("19Ahq0nB5zclSFVUEx_FfRuJ3DcftKZNPh-JD2Sn1X_Q");
         }
         if (TextUtils.isEmpty(reminderTimeInput.getText())) {
-            reminderTimeInput.setText("15:30");
+            reminderTimeInput.setText(formatReminderTime(
+                    settingsStore.getAdminReminderHour(),
+                    settingsStore.getAdminReminderMinute()
+            ));
         }
         saveStatus.setText(R.string.settings_example_filled);
     }
@@ -269,21 +321,18 @@ public class AdminActivity extends ThemedActivity {
             return;
         }
 
-        int[] reminderTime = parseReminderTime(reminderTimeInput.getText().toString());
-        if (adminReminderSwitch.isChecked() && reminderTime == null) {
-            saveStatus.setText(R.string.admin_reminder_time_invalid);
-            return;
-        }
-        if (reminderTime == null) {
-            reminderTime = new int[]{settingsStore.getAdminReminderHour(), settingsStore.getAdminReminderMinute()};
-        }
-
+        int[] reminderTime = getReminderTimeOrSaved();
         persistAdminSettings(settings, reminderTime[0], reminderTime[1]);
         saveStatus.setText(R.string.settings_saved_message);
         setResult(RESULT_OK);
     }
 
     private void collectDataNow() {
+        if (!adminModeSwitch.isChecked()) {
+            dataSyncStatus.setText(R.string.admin_sync_need_admin_mode);
+            return;
+        }
+
         SettingsStore.SheetSettings settings = buildSettingsFromInputs();
         if (!validateSheetSettings(settings)) {
             dataSyncStatus.setText(R.string.admin_sync_fix_settings);
@@ -335,14 +384,14 @@ public class AdminActivity extends ThemedActivity {
 
     private void persistAdminSettings(SettingsStore.SheetSettings settings, int reminderHour, int reminderMinute) {
         settingsStore.save(settings);
-        settingsStore.setAdminModeEnabled(true);
+        settingsStore.setAdminModeEnabled(adminModeSwitch.isChecked());
         settingsStore.setAdminReminderEnabled(adminReminderSwitch.isChecked());
         settingsStore.setAdminReminderTime(reminderHour, reminderMinute);
         applyReminder(reminderHour, reminderMinute);
     }
 
     private void applyReminder(int reminderHour, int reminderMinute) {
-        if (!settingsStore.isAdminReminderEnabled()) {
+        if (!settingsStore.isAdminModeEnabled() || !settingsStore.isAdminReminderEnabled()) {
             AdminReminderScheduler.cancelReminder(this);
             return;
         }
@@ -432,7 +481,7 @@ public class AdminActivity extends ThemedActivity {
     }
 
     private void setDataSyncLoading(boolean isLoading) {
-        dataSyncButton.setEnabled(!isLoading);
+        dataSyncButton.setEnabled(!isLoading && adminModeSwitch.isChecked());
     }
 
     private boolean isAuthExpiredMessage(String message) {

@@ -4,6 +4,9 @@ public class InventoryItem {
     private final String productCode;
     private final String orderCode;
     private final String productName;
+    private final String importPrice;
+    private final String supplyPrice;
+    private final String retailPrice;
     private final String stockQuantity;
     private final String todaySoldQuantity;
     private final String actualStockQuantity;
@@ -14,6 +17,9 @@ public class InventoryItem {
             String productCode,
             String orderCode,
             String productName,
+            String importPrice,
+            String supplyPrice,
+            String retailPrice,
             String stockQuantity,
             String todaySoldQuantity,
             String actualStockQuantity,
@@ -23,6 +29,9 @@ public class InventoryItem {
         this.productCode = productCode;
         this.orderCode = orderCode;
         this.productName = productName;
+        this.importPrice = importPrice;
+        this.supplyPrice = supplyPrice;
+        this.retailPrice = retailPrice;
         this.stockQuantity = stockQuantity;
         this.todaySoldQuantity = todaySoldQuantity;
         this.actualStockQuantity = actualStockQuantity;
@@ -40,6 +49,18 @@ public class InventoryItem {
 
     public String getProductName() {
         return productName;
+    }
+
+    public String getImportPrice() {
+        return importPrice;
+    }
+
+    public String getSupplyPrice() {
+        return supplyPrice;
+    }
+
+    public String getRetailPrice() {
+        return retailPrice;
     }
 
     public String getStockQuantity() {
@@ -62,3 +83,4 @@ public class InventoryItem {
         return score;
     }
 }
+

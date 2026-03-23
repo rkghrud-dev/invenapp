@@ -104,6 +104,9 @@ public class SheetsRepository {
             int productCodeIndex = getRelativeColumnIndex(settings.productCodeColumn, rangeStartColumn);
             int orderCodeIndex = getRelativeColumnIndex(settings.orderCodeColumn, rangeStartColumn);
             int productNameIndex = getRelativeColumnIndex(settings.productNameColumn, rangeStartColumn);
+            int importPriceIndex = getOptionalRelativeColumnIndex("D", rangeStartColumn);
+            int supplyPriceIndex = getOptionalRelativeColumnIndex("E", rangeStartColumn);
+            int retailPriceIndex = getOptionalRelativeColumnIndex("F", rangeStartColumn);
             int stockIndex = getRelativeColumnIndex(settings.stockColumn, rangeStartColumn);
 
             List<InventoryItem> matches = new ArrayList<>();
@@ -119,6 +122,9 @@ public class SheetsRepository {
                 if (TextUtils.isEmpty(productName)) {
                     productName = orderCode;
                 }
+                String importPrice = getCell(row, importPriceIndex);
+                String supplyPrice = getCell(row, supplyPriceIndex);
+                String retailPrice = getCell(row, retailPriceIndex);
                 String stockQuantity = getCell(row, stockIndex);
 
                 MatchResult matchResult = scoreMatch(normalizedQuery, productCode, orderCode, productName);
@@ -130,6 +136,9 @@ public class SheetsRepository {
                         productCode,
                         orderCode,
                         productName,
+                        importPrice,
+                        supplyPrice,
+                        retailPrice,
                         stockQuantity,
                         "0",
                         fallbackActualStock(stockQuantity),
@@ -199,6 +208,9 @@ public class SheetsRepository {
                     item.getProductCode(),
                     item.getOrderCode(),
                     item.getProductName(),
+                    item.getImportPrice(),
+                    item.getSupplyPrice(),
+                    item.getRetailPrice(),
                     item.getStockQuantity(),
                     formatQuantity(soldQuantity),
                     calculateActualStock(item.getStockQuantity(), soldQuantity),
@@ -253,6 +265,16 @@ public class SheetsRepository {
             throw new IOException("컬럼 설정이 조회 범위보다 앞에 있습니다. 범위와 컬럼 문자를 확인하세요.");
         }
         return relativeIndex;
+    }
+
+    private int getOptionalRelativeColumnIndex(String columnLabel, int rangeStartColumn) throws IOException {
+        if (TextUtils.isEmpty(columnLabel)) {
+            return -1;
+        }
+
+        int absoluteIndex = columnToIndex(columnLabel);
+        int relativeIndex = absoluteIndex - rangeStartColumn;
+        return Math.max(relativeIndex, -1);
     }
 
     private int getRangeStartColumn(String range) throws IOException {
@@ -392,3 +414,4 @@ public class SheetsRepository {
         }
     }
 }
+

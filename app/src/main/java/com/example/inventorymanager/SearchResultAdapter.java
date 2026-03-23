@@ -79,6 +79,21 @@ public class SearchResultAdapter extends BaseAdapter {
                 item.getTodaySoldQuantity(),
                 "0"
         ));
+        holder.importPrice.setText(buildPriceCardText(
+                context.getString(R.string.result_import_price_label),
+                item.getImportPrice(),
+                context.getString(R.string.result_price_unavailable)
+        ));
+        holder.supplyPrice.setText(buildPriceCardText(
+                context.getString(R.string.result_supply_price_label),
+                item.getSupplyPrice(),
+                context.getString(R.string.result_price_unavailable)
+        ));
+        holder.retailPrice.setText(buildPriceCardText(
+                context.getString(R.string.result_retail_price_label),
+                item.getRetailPrice(),
+                context.getString(R.string.result_price_unavailable)
+        ));
         holder.productCode.setText(buildLabeledText("상품코드", item.getProductCode()));
         holder.orderCode.setText(buildLabeledText("주문코드", item.getOrderCode()));
         return convertView;
@@ -104,6 +119,10 @@ public class SearchResultAdapter extends BaseAdapter {
         return label + " " + valueOrFallback(value, fallback);
     }
 
+    private String buildPriceCardText(String label, String value, String fallback) {
+        return label + "\n" + valueOrFallback(value, fallback);
+    }
+
     private String valueOrFallback(String value, String fallback) {
         return TextUtils.isEmpty(value) ? fallback : value;
     }
@@ -126,6 +145,9 @@ public class SearchResultAdapter extends BaseAdapter {
         private final TextView matchReason;
         private final TextView currentStockQuantity;
         private final TextView todaySoldQuantity;
+        private final TextView importPrice;
+        private final TextView supplyPrice;
+        private final TextView retailPrice;
         private final TextView productCode;
         private final TextView orderCode;
 
@@ -135,8 +157,12 @@ public class SearchResultAdapter extends BaseAdapter {
             matchReason = root.findViewById(R.id.item_match_reason);
             currentStockQuantity = root.findViewById(R.id.item_current_stock_quantity);
             todaySoldQuantity = root.findViewById(R.id.item_today_sold_quantity);
+            importPrice = root.findViewById(R.id.item_import_price);
+            supplyPrice = root.findViewById(R.id.item_supply_price);
+            retailPrice = root.findViewById(R.id.item_retail_price);
             productCode = root.findViewById(R.id.item_product_code);
             orderCode = root.findViewById(R.id.item_order_code);
         }
     }
 }
+

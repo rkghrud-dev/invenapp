@@ -1,6 +1,5 @@
 package com.example.inventorymanager;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -14,7 +13,10 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import androidx.appcompat.app.AlertDialog;
+
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -27,16 +29,20 @@ public class InventoryActivity extends ThemedActivity {
     private SheetsRepository sheetsRepository;
     private GoogleProfileRepository googleProfileRepository;
     private GoogleOAuthRepository googleOAuthRepository;
+    private SearchHistoryStore searchHistoryStore;
     private SearchResultAdapter adapter;
 
     private View mainRoot;
     private EditText searchInput;
-    private TextView configSummary;
     private TextView statusText;
     private TextView emptyView;
     private ProgressBar progressBar;
     private Button searchButton;
-    private Button optionsButton;
+    private Button saveSearchButton;
+    private Button loadHistoryButton;
+
+    private List<InventoryItem> currentResults = Collections.emptyList();
+    private String lastSearchedQuery = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,15 +53,16 @@ public class InventoryActivity extends ThemedActivity {
         sheetsRepository = new SheetsRepository();
         googleProfileRepository = new GoogleProfileRepository();
         googleOAuthRepository = new GoogleOAuthRepository(this);
+        searchHistoryStore = new SearchHistoryStore(this);
 
         mainRoot = findViewById(R.id.main_root);
         searchInput = findViewById(R.id.search_input);
-        configSummary = findViewById(R.id.config_summary);
         statusText = findViewById(R.id.status_text);
         emptyView = findViewById(R.id.empty_view);
         progressBar = findViewById(R.id.progress_bar);
         searchButton = findViewById(R.id.search_button);
-        optionsButton = findViewById(R.id.options_button);
+        saveSearchButton = findViewById(R.id.save_search_button);
+        loadHistoryButton = findViewById(R.id.load_history_button);
         ListView resultsList = findViewById(R.id.results_list);
 
         adapter = new SearchResultAdapter(this);
@@ -63,10 +70,10 @@ public class InventoryActivity extends ThemedActivity {
         resultsList.setEmptyView(emptyView);
 
         searchButton.setOnClickListener(view -> runSearch());
-        optionsButton.setOnClickListener(view -> startActivity(new Intent(this, OptionsActivity.class)));
+        saveSearchButton.setOnClickListener(view -> saveCurrentSearch());
+        loadHistoryButton.setOnClickListener(view -> openSavedSearches());
         searchInput.setOnEditorActionListener(this::handleEditorAction);
 
-        updateConfigSummary();
         showIdleStatus();
         mainRoot.post(this::resetSearchFocus);
     }
@@ -74,7 +81,6 @@ public class InventoryActivity extends ThemedActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        updateConfigSummary();
         showIdleStatus();
         mainRoot.post(this::resetSearchFocus);
     }
@@ -101,10 +107,6 @@ public class InventoryActivity extends ThemedActivity {
         return false;
     }
 
-    private void updateConfigSummary() {
-        configSummary.setText(settingsStore.load().toSummary());
-    }
-
     private void showIdleStatus() {
         if (!settingsStore.load().isReady()) {
             showStatus(getString(R.string.status_sheet_not_ready));
@@ -123,14 +125,14 @@ public class InventoryActivity extends ThemedActivity {
     private void runSearch() {
         String query = searchInput.getText().toString().trim();
         if (TextUtils.isEmpty(query)) {
+            clearCurrentResults();
             showStatus(getString(R.string.status_enter_query));
-            adapter.setItems(null);
             return;
         }
 
         if (!settingsStore.load().isReady()) {
+            clearCurrentResults();
             showStatus(getString(R.string.status_sheet_not_ready));
-            adapter.setItems(null);
             return;
         }
 
@@ -156,7 +158,8 @@ public class InventoryActivity extends ThemedActivity {
 
                 List<InventoryItem> finalResults = results;
                 mainHandler.post(() -> {
-                    updateConfigSummary();
+                    lastSearchedQuery = query;
+                    currentResults = finalResults;
                     adapter.setItems(finalResults);
                     if (finalResults.isEmpty()) {
                         showStatus(getString(R.string.status_no_results));
@@ -168,12 +171,85 @@ public class InventoryActivity extends ThemedActivity {
             } catch (IOException exception) {
                 googleOAuthRepository.clearAccessToken();
                 mainHandler.post(() -> {
-                    adapter.setItems(null);
+                    clearCurrentResults();
                     showStatus(safeMessage(exception));
                     setLoading(false);
                 });
             }
         });
+    }
+
+    private void saveCurrentSearch() {
+        if (TextUtils.isEmpty(lastSearchedQuery) || currentResults.isEmpty()) {
+            showStatus(getString(R.string.status_history_need_result));
+            return;
+        }
+
+        searchHistoryStore.save(lastSearchedQuery, buildHistoryPreview(currentResults), currentResults.size());
+        showStatus(getString(R.string.status_history_saved));
+    }
+
+    private void openSavedSearches() {
+        List<SearchHistoryStore.Entry> entries = searchHistoryStore.loadEntries();
+        if (entries.isEmpty()) {
+            showStatus(getString(R.string.status_history_empty));
+            return;
+        }
+
+        CharSequence[] labels = new CharSequence[entries.size()];
+        for (int i = 0; i < entries.size(); i++) {
+            labels[i] = buildHistoryLabel(entries.get(i));
+        }
+
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.history_dialog_title)
+                .setItems(labels, (dialog, which) -> loadSavedSearch(entries.get(which)))
+                .setNegativeButton(android.R.string.cancel, null)
+                .show();
+    }
+
+    private CharSequence buildHistoryLabel(SearchHistoryStore.Entry entry) {
+        StringBuilder builder = new StringBuilder(entry.getQuery());
+        if (!TextUtils.isEmpty(entry.getPreview()) && !entry.getQuery().equals(entry.getPreview())) {
+            builder.append("\n").append(entry.getPreview());
+        }
+        builder.append("\n").append(entry.getSavedAtLabel()).append(" 저장");
+        if (entry.getResultCount() > 0) {
+            builder.append(" · ").append(entry.getResultCount()).append("건");
+        }
+        return builder.toString();
+    }
+
+    private void loadSavedSearch(SearchHistoryStore.Entry entry) {
+        if (entry == null || TextUtils.isEmpty(entry.getQuery())) {
+            return;
+        }
+
+        searchInput.setText(entry.getQuery());
+        searchInput.setSelection(entry.getQuery().length());
+        runSearch();
+    }
+
+    private String buildHistoryPreview(List<InventoryItem> results) {
+        if (results == null || results.isEmpty()) {
+            return "";
+        }
+
+        InventoryItem first = results.get(0);
+        String preview = first.getProductName();
+        if (TextUtils.isEmpty(preview)) {
+            preview = first.getOrderCode();
+        }
+        if (TextUtils.isEmpty(preview)) {
+            preview = first.getProductCode();
+        }
+        return preview == null ? "" : preview.trim();
+    }
+
+    private void clearCurrentResults() {
+        currentResults = Collections.emptyList();
+        lastSearchedQuery = "";
+        adapter.setItems(null);
     }
 
     private void rememberAccountIfNeeded(String accessToken) {
@@ -201,7 +277,8 @@ public class InventoryActivity extends ThemedActivity {
     private void setLoading(boolean isLoading) {
         progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
         searchButton.setEnabled(!isLoading);
-        optionsButton.setEnabled(!isLoading);
+        saveSearchButton.setEnabled(!isLoading);
+        loadHistoryButton.setEnabled(!isLoading);
     }
 
     private void showStatus(String message) {

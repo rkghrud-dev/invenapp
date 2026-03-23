@@ -1,6 +1,5 @@
 package com.example.inventorymanager;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -37,7 +36,6 @@ public class UnshippedActivity extends ThemedActivity implements UnshippedAdapte
     private ProgressBar progressBar;
     private Button loadTodayButton;
     private Button queryButton;
-    private Button optionsButton;
 
     private List<UnshippedItem> loadedItems = Collections.emptyList();
 
@@ -57,7 +55,6 @@ public class UnshippedActivity extends ThemedActivity implements UnshippedAdapte
         progressBar = findViewById(R.id.progress_bar);
         loadTodayButton = findViewById(R.id.load_today_button);
         queryButton = findViewById(R.id.query_button);
-        optionsButton = findViewById(R.id.options_button);
         ListView resultsList = findViewById(R.id.results_list);
 
         adapter = new UnshippedAdapter(this, this);
@@ -70,7 +67,6 @@ public class UnshippedActivity extends ThemedActivity implements UnshippedAdapte
 
         loadTodayButton.setOnClickListener(v -> loadTodayRows());
         queryButton.setOnClickListener(v -> querySelectedVendor());
-        optionsButton.setOnClickListener(v -> startActivity(new Intent(this, OptionsActivity.class)));
 
         updateVendorOptions(Collections.emptyList());
         showIdleState();
@@ -267,7 +263,6 @@ public class UnshippedActivity extends ThemedActivity implements UnshippedAdapte
         progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
         loadTodayButton.setEnabled(!isLoading);
         queryButton.setEnabled(!isLoading);
-        optionsButton.setEnabled(!isLoading);
         vendorSpinner.setEnabled(!isLoading);
         adapter.setControlsEnabled(!isLoading);
     }
@@ -283,3 +278,4 @@ public class UnshippedActivity extends ThemedActivity implements UnshippedAdapte
         return exception.getMessage();
     }
 }
+
