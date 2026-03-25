@@ -83,14 +83,14 @@ public class SalesRankingActivity extends ThemedActivity {
         resultsList.setAdapter(adapter);
         resultsList.setEmptyView(emptyView);
 
-        datePickerButton.setOnClickListener(v -> showDatePicker());
-        monthPickerButton.setOnClickListener(v -> showMonthPicker());
+        datePickerButton.setOnClickListener(v -> showDatePicker(false));
+        monthPickerButton.setOnClickListener(v -> showMonthPicker(false));
         top10Button.setOnClickListener(v -> selectLimit(10));
         top30Button.setOnClickListener(v -> selectLimit(30));
         top50Button.setOnClickListener(v -> selectLimit(50));
         todayButton.setOnClickListener(v -> loadTodayRanking());
-        dateSearchButton.setOnClickListener(v -> loadDateRanking());
-        monthSearchButton.setOnClickListener(v -> loadMonthRanking());
+        dateSearchButton.setOnClickListener(v -> showDatePicker(true));
+        monthSearchButton.setOnClickListener(v -> showMonthPicker(true));
 
         updatePickerButtons();
         updateLimitButtons();
@@ -137,7 +137,7 @@ public class SalesRankingActivity extends ThemedActivity {
         runRankingQuery();
     }
 
-    private void showDatePicker() {
+    private void showDatePicker(boolean runQueryAfterPick) {
         Calendar current = (Calendar) selectedDate.clone();
         DatePickerDialog dialog = new DatePickerDialog(
                 this,
@@ -145,6 +145,9 @@ public class SalesRankingActivity extends ThemedActivity {
                     selectedDate.set(year, month, dayOfMonth);
                     clearTime(selectedDate);
                     updateDatePickerButton();
+                    if (runQueryAfterPick) {
+                        loadDateRanking();
+                    }
                 },
                 current.get(Calendar.YEAR),
                 current.get(Calendar.MONTH),
@@ -153,7 +156,7 @@ public class SalesRankingActivity extends ThemedActivity {
         dialog.show();
     }
 
-    private void showMonthPicker() {
+    private void showMonthPicker(boolean runQueryAfterPick) {
         Calendar current = (Calendar) selectedMonth.clone();
         DatePickerDialog dialog = new DatePickerDialog(
                 this,
@@ -161,6 +164,9 @@ public class SalesRankingActivity extends ThemedActivity {
                     selectedMonth.set(year, month, 1);
                     clearTime(selectedMonth);
                     updateMonthPickerButton();
+                    if (runQueryAfterPick) {
+                        loadMonthRanking();
+                    }
                 },
                 current.get(Calendar.YEAR),
                 current.get(Calendar.MONTH),
