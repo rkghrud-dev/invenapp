@@ -1,19 +1,18 @@
 package com.example.inventorymanager;
 
+import android.app.DatePickerDialog;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import java.io.IOException;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ExecutorService;
@@ -28,14 +27,16 @@ public class SalesRankingActivity extends ThemedActivity {
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
     private final SimpleDateFormat dayFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.KOREA);
     private final SimpleDateFormat monthFormat = new SimpleDateFormat("yyyy-MM", Locale.KOREA);
+    private final Calendar selectedDate = Calendar.getInstance(Locale.KOREA);
+    private final Calendar selectedMonth = Calendar.getInstance(Locale.KOREA);
 
     private SettingsStore settingsStore;
     private GoogleOAuthRepository googleOAuthRepository;
     private SalesRankingRepository salesRankingRepository;
     private SalesRankingAdapter adapter;
 
-    private EditText dateInput;
-    private EditText monthInput;
+    private Button datePickerButton;
+    private Button monthPickerButton;
     private TextView querySummary;
     private TextView statusText;
     private TextView emptyView;
@@ -58,13 +59,14 @@ public class SalesRankingActivity extends ThemedActivity {
 
         dayFormat.setLenient(false);
         monthFormat.setLenient(false);
+        normalizeSelectionCalendars();
 
         settingsStore = new SettingsStore(this);
         googleOAuthRepository = new GoogleOAuthRepository(this);
         salesRankingRepository = new SalesRankingRepository();
 
-        dateInput = findViewById(R.id.date_input);
-        monthInput = findViewById(R.id.month_input);
+        datePickerButton = findViewById(R.id.date_picker_button);
+        monthPickerButton = findViewById(R.id.month_picker_button);
         querySummary = findViewById(R.id.query_summary);
         statusText = findViewById(R.id.status_text);
         emptyView = findViewById(R.id.empty_view);
@@ -81,9 +83,8 @@ public class SalesRankingActivity extends ThemedActivity {
         resultsList.setAdapter(adapter);
         resultsList.setEmptyView(emptyView);
 
-        dateInput.setText(todayText());
-        monthInput.setText(todayMonthText());
-
+        datePickerButton.setOnClickListener(v -> showDatePicker());
+        monthPickerButton.setOnClickListener(v -> showMonthPicker());
         top10Button.setOnClickListener(v -> selectLimit(10));
         top30Button.setOnClickListener(v -> selectLimit(30));
         top50Button.setOnClickListener(v -> selectLimit(50));
@@ -91,6 +92,7 @@ public class SalesRankingActivity extends ThemedActivity {
         dateSearchButton.setOnClickListener(v -> loadDateRanking());
         monthSearchButton.setOnClickListener(v -> loadMonthRanking());
 
+        updatePickerButtons();
         updateLimitButtons();
         updateQuerySummary();
         runRankingQuery();
@@ -113,36 +115,58 @@ public class SalesRankingActivity extends ThemedActivity {
     }
 
     private void loadTodayRanking() {
+        normalizeSelectionCalendars();
+        updatePickerButtons();
         currentMode = MODE_TODAY;
         currentTarget = todayText();
-        dateInput.setText(currentTarget);
-        monthInput.setText(todayMonthText());
         updateQuerySummary();
         runRankingQuery();
     }
 
     private void loadDateRanking() {
-        String value = dateInput.getText().toString().trim();
-        if (!isValidDate(value)) {
-            showStatus(getString(R.string.status_ranking_need_date));
-            return;
-        }
         currentMode = MODE_DATE;
-        currentTarget = value;
+        currentTarget = formatDay(selectedDate);
         updateQuerySummary();
         runRankingQuery();
     }
 
     private void loadMonthRanking() {
-        String value = monthInput.getText().toString().trim();
-        if (!isValidMonth(value)) {
-            showStatus(getString(R.string.status_ranking_need_month));
-            return;
-        }
         currentMode = MODE_MONTH;
-        currentTarget = value;
+        currentTarget = formatMonth(selectedMonth);
         updateQuerySummary();
         runRankingQuery();
+    }
+
+    private void showDatePicker() {
+        Calendar current = (Calendar) selectedDate.clone();
+        DatePickerDialog dialog = new DatePickerDialog(
+                this,
+                (view, year, month, dayOfMonth) -> {
+                    selectedDate.set(year, month, dayOfMonth);
+                    clearTime(selectedDate);
+                    updateDatePickerButton();
+                },
+                current.get(Calendar.YEAR),
+                current.get(Calendar.MONTH),
+                current.get(Calendar.DAY_OF_MONTH)
+        );
+        dialog.show();
+    }
+
+    private void showMonthPicker() {
+        Calendar current = (Calendar) selectedMonth.clone();
+        DatePickerDialog dialog = new DatePickerDialog(
+                this,
+                (view, year, month, dayOfMonth) -> {
+                    selectedMonth.set(year, month, 1);
+                    clearTime(selectedMonth);
+                    updateMonthPickerButton();
+                },
+                current.get(Calendar.YEAR),
+                current.get(Calendar.MONTH),
+                current.get(Calendar.DAY_OF_MONTH)
+        );
+        dialog.show();
     }
 
     private void runRankingQuery() {
@@ -198,6 +222,19 @@ public class SalesRankingActivity extends ThemedActivity {
         return salesRankingRepository.loadByDate(rankingSpreadsheetId, target, limit, accessToken);
     }
 
+    private void updatePickerButtons() {
+        updateDatePickerButton();
+        updateMonthPickerButton();
+    }
+
+    private void updateDatePickerButton() {
+        datePickerButton.setText(formatDay(selectedDate));
+    }
+
+    private void updateMonthPickerButton() {
+        monthPickerButton.setText(formatMonth(selectedMonth));
+    }
+
     private void updateLimitButtons() {
         styleLimitButton(top10Button, currentLimit == 10);
         styleLimitButton(top30Button, currentLimit == 30);
@@ -226,6 +263,30 @@ public class SalesRankingActivity extends ThemedActivity {
         querySummary.setText(getString(R.string.status_ranking_today_summary, currentLimit));
     }
 
+    private void normalizeSelectionCalendars() {
+        Calendar now = Calendar.getInstance(Locale.KOREA);
+        selectedDate.setTimeInMillis(now.getTimeInMillis());
+        clearTime(selectedDate);
+        selectedMonth.setTimeInMillis(now.getTimeInMillis());
+        selectedMonth.set(Calendar.DAY_OF_MONTH, 1);
+        clearTime(selectedMonth);
+    }
+
+    private String formatDay(Calendar calendar) {
+        return dayFormat.format(calendar.getTime());
+    }
+
+    private String formatMonth(Calendar calendar) {
+        return monthFormat.format(calendar.getTime());
+    }
+
+    private void clearTime(Calendar calendar) {
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+    }
+
     private boolean isAuthExpiredMessage(String message) {
         if (TextUtils.isEmpty(message)) {
             return false;
@@ -239,6 +300,8 @@ public class SalesRankingActivity extends ThemedActivity {
 
     private void setLoading(boolean isLoading) {
         progressBar.setVisibility(isLoading ? android.view.View.VISIBLE : android.view.View.GONE);
+        datePickerButton.setEnabled(!isLoading);
+        monthPickerButton.setEnabled(!isLoading);
         todayButton.setEnabled(!isLoading);
         dateSearchButton.setEnabled(!isLoading);
         monthSearchButton.setEnabled(!isLoading);
@@ -258,30 +321,7 @@ public class SalesRankingActivity extends ThemedActivity {
         return exception.getMessage();
     }
 
-    private boolean isValidDate(String value) {
-        return parse(dayFormat, value) != null;
-    }
-
-    private boolean isValidMonth(String value) {
-        return parse(monthFormat, value) != null;
-    }
-
-    private Date parse(SimpleDateFormat format, String value) {
-        if (TextUtils.isEmpty(value)) {
-            return null;
-        }
-        try {
-            return format.parse(value);
-        } catch (ParseException ignored) {
-            return null;
-        }
-    }
-
     private String todayText() {
-        return dayFormat.format(new Date());
-    }
-
-    private String todayMonthText() {
-        return monthFormat.format(new Date());
+        return dayFormat.format(Calendar.getInstance(Locale.KOREA).getTime());
     }
 }

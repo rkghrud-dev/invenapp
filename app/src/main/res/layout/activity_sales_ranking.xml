@@ -120,21 +120,18 @@
             android:layout_marginTop="14dp"
             android:orientation="horizontal">
 
-            <EditText
-                android:id="@+id/date_input"
+            <Button
+                android:id="@+id/date_picker_button"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="52dp"
                 android:layout_weight="1"
                 android:background="@drawable/bg_input"
-                android:hint="@string/ranking_date_hint"
-                android:inputType="date"
-                android:maxLines="1"
+                android:gravity="start|center_vertical"
                 android:paddingLeft="18dp"
-                android:paddingTop="16dp"
                 android:paddingRight="18dp"
-                android:paddingBottom="16dp"
+                android:text="@string/ranking_select_date_button"
+                android:textAllCaps="false"
                 android:textColor="?attr/paletteTextPrimary"
-                android:textColorHint="?attr/paletteTextHint"
                 android:textSize="16sp" />
 
             <Button
@@ -157,21 +154,18 @@
             android:layout_marginTop="12dp"
             android:orientation="horizontal">
 
-            <EditText
-                android:id="@+id/month_input"
+            <Button
+                android:id="@+id/month_picker_button"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="52dp"
                 android:layout_weight="1"
                 android:background="@drawable/bg_input"
-                android:hint="@string/ranking_month_hint"
-                android:inputType="text"
-                android:maxLines="1"
+                android:gravity="start|center_vertical"
                 android:paddingLeft="18dp"
-                android:paddingTop="16dp"
                 android:paddingRight="18dp"
-                android:paddingBottom="16dp"
+                android:text="@string/ranking_select_month_button"
+                android:textAllCaps="false"
                 android:textColor="?attr/paletteTextPrimary"
-                android:textColorHint="?attr/paletteTextHint"
                 android:textSize="16sp" />
 
             <Button

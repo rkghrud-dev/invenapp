@@ -49,6 +49,8 @@
     <string name="ranking_top30">Top 30</string>
     <string name="ranking_top50">Top 50</string>
     <string name="ranking_today_button">오늘 순위 보기</string>
+    <string name="ranking_select_date_button">날짜 선택</string>
+    <string name="ranking_select_month_button">월 선택</string>
     <string name="ranking_date_hint">예: 2026-03-12</string>
     <string name="ranking_month_hint">예: 2026-03</string>
     <string name="ranking_date_button">날짜 조회</string>
