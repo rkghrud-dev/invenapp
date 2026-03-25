@@ -1,5 +1,6 @@
 package com.example.inventorymanager;
 
+import android.app.DatePickerDialog;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -13,15 +14,20 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class UnshippedActivity extends ThemedActivity implements UnshippedAdapter.FeedbackListener {
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
+    private final Calendar selectedDate = Calendar.getInstance(Locale.KOREA);
+    private final SimpleDateFormat displayDateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.KOREA);
 
     private SettingsStore settingsStore;
     private GoogleOAuthRepository googleOAuthRepository;
@@ -29,12 +35,13 @@ public class UnshippedActivity extends ThemedActivity implements UnshippedAdapte
     private UnshippedAdapter adapter;
     private ArrayAdapter<String> vendorAdapter;
 
+    private Button selectedDateButton;
     private Spinner vendorSpinner;
     private TextView querySummary;
     private TextView statusText;
     private TextView emptyView;
     private ProgressBar progressBar;
-    private Button loadTodayButton;
+    private Button loadDateButton;
     private Button queryButton;
 
     private List<UnshippedItem> loadedItems = Collections.emptyList();
@@ -44,16 +51,18 @@ public class UnshippedActivity extends ThemedActivity implements UnshippedAdapte
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_unshipped);
 
+        clearTime(selectedDate);
         settingsStore = new SettingsStore(this);
         googleOAuthRepository = new GoogleOAuthRepository(this);
         unshippedRepository = new UnshippedRepository();
 
+        selectedDateButton = findViewById(R.id.selected_date_button);
         vendorSpinner = findViewById(R.id.vendor_spinner);
         querySummary = findViewById(R.id.query_summary);
         statusText = findViewById(R.id.status_text);
         emptyView = findViewById(R.id.empty_view);
         progressBar = findViewById(R.id.progress_bar);
-        loadTodayButton = findViewById(R.id.load_today_button);
+        loadDateButton = findViewById(R.id.load_today_button);
         queryButton = findViewById(R.id.query_button);
         ListView resultsList = findViewById(R.id.results_list);
 
@@ -65,9 +74,11 @@ public class UnshippedActivity extends ThemedActivity implements UnshippedAdapte
         vendorAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         vendorSpinner.setAdapter(vendorAdapter);
 
-        loadTodayButton.setOnClickListener(v -> loadTodayRows());
+        selectedDateButton.setOnClickListener(v -> showDatePicker());
+        loadDateButton.setOnClickListener(v -> loadSelectedDateRows());
         queryButton.setOnClickListener(v -> querySelectedVendor());
 
+        updateSelectedDateButton();
         updateVendorOptions(Collections.emptyList());
         showIdleState();
     }
@@ -89,36 +100,64 @@ public class UnshippedActivity extends ThemedActivity implements UnshippedAdapte
     }
 
     private void showIdleState() {
-        querySummary.setText(R.string.unshipped_summary_idle);
-        emptyView.setText(R.string.unshipped_empty_results);
-        showStatus(getString(R.string.unshipped_status_idle));
+        String dateText = getSelectedDateText();
+        querySummary.setText(getString(R.string.unshipped_summary_idle, dateText));
+        emptyView.setText(getString(R.string.unshipped_empty_results, dateText));
+        showStatus(getString(R.string.unshipped_status_idle, dateText));
     }
 
-    private void loadTodayRows() {
+    private void showDatePicker() {
+        Calendar current = (Calendar) selectedDate.clone();
+        DatePickerDialog dialog = new DatePickerDialog(
+                this,
+                (view, year, month, dayOfMonth) -> {
+                    selectedDate.set(year, month, dayOfMonth);
+                    clearTime(selectedDate);
+                    updateSelectedDateButton();
+                    resetLoadedStateForSelectedDate();
+                },
+                current.get(Calendar.YEAR),
+                current.get(Calendar.MONTH),
+                current.get(Calendar.DAY_OF_MONTH)
+        );
+        dialog.show();
+    }
+
+    private void resetLoadedStateForSelectedDate() {
+        loadedItems = Collections.emptyList();
+        updateVendorOptions(Collections.emptyList());
+        adapter.setItems(null);
+        showIdleState();
+    }
+
+    private void loadSelectedDateRows() {
         SettingsStore.SheetSettings settings = settingsStore.load();
         if (TextUtils.isEmpty(settings.salesSpreadsheetId)) {
             showStatus(getString(R.string.unshipped_status_sheet_not_ready));
             return;
         }
 
+        Calendar targetDate = (Calendar) selectedDate.clone();
+        String dateText = formatDate(targetDate);
+
         setLoading(true);
-        showStatus(getString(R.string.unshipped_status_loading));
-        emptyView.setText(R.string.unshipped_empty_results);
+        showStatus(getString(R.string.unshipped_status_loading, dateText));
+        emptyView.setText(getString(R.string.unshipped_empty_results, dateText));
         adapter.setItems(null);
 
         executor.execute(() -> {
             try {
-                UnshippedRepository.TodaySnapshot snapshot = loadTodaySnapshot(settings.salesSpreadsheetId);
+                UnshippedRepository.DateSnapshot snapshot = loadDateSnapshot(settings.salesSpreadsheetId, targetDate);
                 mainHandler.post(() -> {
                     loadedItems = snapshot.getItems();
                     updateVendorOptions(snapshot.getVendors());
                     adapter.setItems(null);
                     if (snapshot.getItems().isEmpty()) {
-                        querySummary.setText(R.string.unshipped_summary_no_items);
-                        showStatus(getString(R.string.unshipped_status_no_today));
+                        querySummary.setText(getString(R.string.unshipped_summary_no_items, dateText));
+                        showStatus(getString(R.string.unshipped_status_no_today, dateText));
                     } else {
-                        querySummary.setText(getString(R.string.unshipped_summary_loaded, snapshot.getVendors().size()));
-                        showStatus(getString(R.string.unshipped_status_loaded, snapshot.getVendors().size()));
+                        querySummary.setText(getString(R.string.unshipped_summary_loaded, dateText, snapshot.getVendors().size()));
+                        showStatus(getString(R.string.unshipped_status_loaded, dateText, snapshot.getVendors().size()));
                     }
                     setLoading(false);
                 });
@@ -128,6 +167,7 @@ public class UnshippedActivity extends ThemedActivity implements UnshippedAdapte
                     loadedItems = Collections.emptyList();
                     updateVendorOptions(Collections.emptyList());
                     adapter.setItems(null);
+                    emptyView.setText(getString(R.string.unshipped_empty_results, dateText));
                     showStatus(safeMessage(exception));
                     setLoading(false);
                 });
@@ -135,25 +175,26 @@ public class UnshippedActivity extends ThemedActivity implements UnshippedAdapte
         });
     }
 
-    private UnshippedRepository.TodaySnapshot loadTodaySnapshot(String spreadsheetId) throws IOException {
+    private UnshippedRepository.DateSnapshot loadDateSnapshot(String spreadsheetId, Calendar targetDate) throws IOException {
         GoogleOAuthRepository.AuthSession session = googleOAuthRepository.ensureAccessToken();
         try {
-            return unshippedRepository.loadTodaySnapshot(spreadsheetId, session.getAccessToken());
+            return unshippedRepository.loadDateSnapshot(spreadsheetId, targetDate, session.getAccessToken());
         } catch (IOException firstException) {
             if (!isAuthExpiredMessage(firstException.getMessage())) {
                 throw firstException;
             }
             GoogleOAuthRepository.AuthSession refreshedSession = googleOAuthRepository.refreshAccessToken();
-            return unshippedRepository.loadTodaySnapshot(spreadsheetId, refreshedSession.getAccessToken());
+            return unshippedRepository.loadDateSnapshot(spreadsheetId, targetDate, refreshedSession.getAccessToken());
         }
     }
 
     private void querySelectedVendor() {
+        String dateText = getSelectedDateText();
         if (loadedItems.isEmpty()) {
             adapter.setItems(null);
-            querySummary.setText(R.string.unshipped_summary_no_items);
-            emptyView.setText(R.string.unshipped_empty_results);
-            showStatus(getString(R.string.unshipped_status_no_today));
+            querySummary.setText(getString(R.string.unshipped_summary_no_items, dateText));
+            emptyView.setText(getString(R.string.unshipped_empty_results, dateText));
+            showStatus(getString(R.string.unshipped_status_no_today, dateText));
             return;
         }
 
@@ -172,12 +213,12 @@ public class UnshippedActivity extends ThemedActivity implements UnshippedAdapte
 
         adapter.setItems(filtered);
         emptyView.setText(R.string.unshipped_none);
-        querySummary.setText(getString(R.string.unshipped_summary_vendor, vendor, filtered.size()));
+        querySummary.setText(getString(R.string.unshipped_summary_vendor, dateText, vendor, filtered.size()));
         if (filtered.isEmpty()) {
             showStatus(getString(R.string.unshipped_status_no_vendor_result));
             return;
         }
-        showStatus(getString(R.string.unshipped_status_result_count, vendor, filtered.size()));
+        showStatus(getString(R.string.unshipped_status_result_count, dateText, vendor, filtered.size()));
     }
 
     private void saveFeedback(UnshippedItem item, String feedback) {
@@ -232,6 +273,10 @@ public class UnshippedActivity extends ThemedActivity implements UnshippedAdapte
         }
     }
 
+    private void updateSelectedDateButton() {
+        selectedDateButton.setText(getSelectedDateText());
+    }
+
     private void updateVendorOptions(List<String> vendors) {
         vendorAdapter.clear();
         if (vendors == null || vendors.isEmpty()) {
@@ -248,6 +293,21 @@ public class UnshippedActivity extends ThemedActivity implements UnshippedAdapte
         return selectedItem == null ? "" : selectedItem.toString().trim();
     }
 
+    private String getSelectedDateText() {
+        return formatDate(selectedDate);
+    }
+
+    private String formatDate(Calendar date) {
+        return displayDateFormat.format(date.getTime());
+    }
+
+    private void clearTime(Calendar calendar) {
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+    }
+
     private boolean isAuthExpiredMessage(String message) {
         if (TextUtils.isEmpty(message)) {
             return false;
@@ -261,7 +321,8 @@ public class UnshippedActivity extends ThemedActivity implements UnshippedAdapte
 
     private void setLoading(boolean isLoading) {
         progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
-        loadTodayButton.setEnabled(!isLoading);
+        selectedDateButton.setEnabled(!isLoading);
+        loadDateButton.setEnabled(!isLoading);
         queryButton.setEnabled(!isLoading);
         vendorSpinner.setEnabled(!isLoading);
         adapter.setControlsEnabled(!isLoading);
@@ -278,4 +339,3 @@ public class UnshippedActivity extends ThemedActivity implements UnshippedAdapte
         return exception.getMessage();
     }
 }
-

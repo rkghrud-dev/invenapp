@@ -63,6 +63,29 @@
             android:textSize="18sp"
             android:textStyle="bold" />
 
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:text="@string/unshipped_date_label"
+            android:textColor="?attr/paletteTextPrimary"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/selected_date_button"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/bg_input"
+            android:gravity="start|center_vertical"
+            android:paddingLeft="16dp"
+            android:paddingRight="16dp"
+            android:text="@string/unshipped_date_button"
+            android:textAllCaps="false"
+            android:textColor="?attr/paletteTextPrimary"
+            android:textSize="16sp" />
+
         <Button
             android:id="@+id/load_today_button"
             android:layout_width="match_parent"
@@ -161,7 +184,7 @@
         android:background="@drawable/bg_card_primary"
         android:gravity="center"
         android:padding="24dp"
-        android:text="@string/unshipped_empty_results"
+        android:text="@string/unshipped_date_button"
         android:textColor="?attr/paletteTextSecondary"
         android:textSize="15sp"
         android:visibility="gone" />

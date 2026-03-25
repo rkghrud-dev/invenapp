@@ -24,25 +24,26 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class UnshippedRepository {
     private static final int CONNECT_TIMEOUT_MS = 10000;
     private static final int READ_TIMEOUT_MS = 10000;
 
     private static final String UNSHIPPED_SHEET = "미출고정보";
-    private static final String UNSHIPPED_DATE_RANGE = UNSHIPPED_SHEET + "!D2:D";
-    private static final int LOOKBACK_DAYS = 3;
+    private static final String UNSHIPPED_MARKER_RANGE = UNSHIPPED_SHEET + "!A2:A";
     private static final int ORDER_CODE_INDEX = 0;
     private static final int VENDOR_INDEX = 2;
-    private static final int ORDER_DATE_INDEX = 3;
     private static final int RECIPIENT_NAME_INDEX = 5;
     private static final int RECIPIENT_PHONE_INDEX = 6;
     private static final int REASON_INDEX = 14;
     private static final int SUPPLY_MEMO_INDEX = 15;
     private static final int SELLER_FEEDBACK_INDEX = 16;
     private static final int RESULT_INDEX = 17;
+    private static final Pattern DATE_MARKER_PATTERN = Pattern.compile("(20\\d{2})\\D+(\\d{1,2})\\D+(\\d{1,2})");
 
-    public TodaySnapshot loadTodaySnapshot(String spreadsheetId, String accessToken) throws IOException {
+    public DateSnapshot loadDateSnapshot(String spreadsheetId, Calendar targetDate, String accessToken) throws IOException {
         if (TextUtils.isEmpty(spreadsheetId)) {
             throw new IOException("미출고 조회용 스프레드시트 ID가 비어 있습니다.");
         }
@@ -50,39 +51,37 @@ public class UnshippedRepository {
             throw new IOException("Google 연결이 완료되지 않았습니다.");
         }
 
-        Calendar today = Calendar.getInstance(Locale.KOREA);
-        clearTime(today);
-        Calendar threshold = (Calendar) today.clone();
-        threshold.add(Calendar.DAY_OF_YEAR, -LOOKBACK_DAYS);
-
-        JSONObject dateRoot = requestJson("GET", buildValuesUrl(spreadsheetId, UNSHIPPED_DATE_RANGE), accessToken, null);
-        JSONArray dateValues = dateRoot.optJSONArray("values");
-        if (dateValues == null || dateValues.length() == 0) {
-            return new TodaySnapshot(Collections.emptyList(), Collections.emptyList());
+        Calendar normalizedTarget = copyOf(targetDate);
+        JSONObject markerRoot = requestJson("GET", buildValuesUrl(spreadsheetId, UNSHIPPED_MARKER_RANGE), accessToken, null);
+        JSONArray markerValues = markerRoot.optJSONArray("values");
+        if (markerValues == null || markerValues.length() == 0) {
+            return new DateSnapshot(Collections.emptyList(), Collections.emptyList());
         }
 
-        int startOffset = findRecentStartOffset(dateValues, threshold);
-        if (startOffset < 0) {
-            return new TodaySnapshot(Collections.emptyList(), Collections.emptyList());
+        int markerOffset = findDateMarkerOffset(markerValues, normalizedTarget);
+        if (markerOffset < 0) {
+            return new DateSnapshot(Collections.emptyList(), Collections.emptyList());
         }
 
-        int startRow = startOffset + 2;
-        int endRow = dateValues.length() + 1;
+        int nextMarkerOffset = findNextDateMarkerOffset(markerValues, markerOffset);
+        int startRow = markerOffset + 3;
+        int endRow = nextMarkerOffset >= 0 ? nextMarkerOffset + 1 : markerValues.length() + 1;
+        if (startRow > endRow) {
+            return new DateSnapshot(Collections.emptyList(), Collections.emptyList());
+        }
+
         String dataRange = UNSHIPPED_SHEET + "!A" + startRow + ":R" + endRow;
         JSONObject root = requestJson("GET", buildValuesUrl(spreadsheetId, dataRange), accessToken, null);
         JSONArray values = root.optJSONArray("values");
         if (values == null || values.length() == 0) {
-            return new TodaySnapshot(Collections.emptyList(), Collections.emptyList());
+            return new DateSnapshot(Collections.emptyList(), Collections.emptyList());
         }
 
         List<UnshippedItem> items = new ArrayList<>();
         Set<String> vendors = new LinkedHashSet<>();
         for (int i = 0; i < values.length(); i++) {
             JSONArray row = values.optJSONArray(i);
-            if (row == null) {
-                continue;
-            }
-            if (!isToday(getCell(row, ORDER_DATE_INDEX), today)) {
+            if (!hasItemContent(row)) {
                 continue;
             }
 
@@ -100,7 +99,7 @@ public class UnshippedRepository {
             ));
             vendors.add(vendor);
         }
-        return new TodaySnapshot(new ArrayList<>(vendors), items);
+        return new DateSnapshot(new ArrayList<>(vendors), items);
     }
 
     public void saveSellerFeedback(String spreadsheetId, int sheetRowNumber, String feedback, String accessToken) throws IOException {
@@ -135,31 +134,101 @@ public class UnshippedRepository {
         requestJson("PUT", url, accessToken, body.toString());
     }
 
-    private int findRecentStartOffset(JSONArray dateValues, Calendar threshold) {
-        int earliestRecent = -1;
-        for (int i = dateValues.length() - 1; i >= 0; i--) {
-            JSONArray row = dateValues.optJSONArray(i);
-            String value = getCell(row, 0);
-            if (TextUtils.isEmpty(value)) {
-                continue;
-            }
-            if (isSameOrAfterThreshold(value, threshold)) {
-                earliestRecent = i;
-                continue;
-            }
-            if (earliestRecent >= 0) {
-                break;
+    private int findDateMarkerOffset(JSONArray markerValues, Calendar targetDate) {
+        for (int i = 0; i < markerValues.length(); i++) {
+            JSONArray row = markerValues.optJSONArray(i);
+            Calendar markerDate = parseDateMarker(getCell(row, 0));
+            if (markerDate != null && isSameDay(markerDate, targetDate)) {
+                return i;
             }
         }
-        return earliestRecent;
+        return -1;
     }
 
-    private boolean isSameOrAfterThreshold(String rawDate, Calendar threshold) {
-        Calendar parsed = parseDateCell(rawDate);
-        if (parsed == null) {
+    private int findNextDateMarkerOffset(JSONArray markerValues, int markerOffset) {
+        for (int i = markerOffset + 1; i < markerValues.length(); i++) {
+            JSONArray row = markerValues.optJSONArray(i);
+            if (parseDateMarker(getCell(row, 0)) != null) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private Calendar parseDateMarker(String rawValue) {
+        if (TextUtils.isEmpty(rawValue)) {
+            return null;
+        }
+
+        String value = rawValue.trim();
+        Matcher matcher = DATE_MARKER_PATTERN.matcher(value);
+        if (matcher.find()) {
+            try {
+                int year = Integer.parseInt(matcher.group(1));
+                int month = Integer.parseInt(matcher.group(2));
+                int day = Integer.parseInt(matcher.group(3));
+                return buildCalendar(year, month, day);
+            } catch (NumberFormatException ignored) {
+            }
+        }
+        return parseDateCell(value);
+    }
+
+    private Calendar parseDateCell(String rawDate) {
+        if (TextUtils.isEmpty(rawDate)) {
+            return null;
+        }
+
+        String value = rawDate.trim();
+        for (String pattern : supportedPatterns()) {
+            SimpleDateFormat format = new SimpleDateFormat(pattern, Locale.KOREA);
+            format.setLenient(false);
+            try {
+                java.util.Date parsedDate = format.parse(value);
+                if (parsedDate == null) {
+                    continue;
+                }
+                Calendar calendar = Calendar.getInstance(Locale.KOREA);
+                calendar.setTime(parsedDate);
+                clearTime(calendar);
+                return calendar;
+            } catch (ParseException ignored) {
+            }
+        }
+        return null;
+    }
+
+    private Calendar copyOf(Calendar source) {
+        Calendar calendar = source == null
+                ? Calendar.getInstance(Locale.KOREA)
+                : (Calendar) source.clone();
+        clearTime(calendar);
+        return calendar;
+    }
+
+    private Calendar buildCalendar(int year, int month, int day) {
+        Calendar calendar = Calendar.getInstance(Locale.KOREA);
+        calendar.clear();
+        calendar.set(year, month - 1, day, 0, 0, 0);
+        return calendar;
+    }
+
+    private boolean hasItemContent(JSONArray row) {
+        if (row == null) {
             return false;
         }
-        return !parsed.before(threshold);
+        int maxIndex = Math.min(row.length() - 1, RESULT_INDEX);
+        for (int i = 0; i <= maxIndex; i++) {
+            if (!TextUtils.isEmpty(row.optString(i, "").trim())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isSameDay(Calendar left, Calendar right) {
+        return left.get(Calendar.YEAR) == right.get(Calendar.YEAR)
+                && left.get(Calendar.DAY_OF_YEAR) == right.get(Calendar.DAY_OF_YEAR);
     }
 
     private String buildValuesUrl(String spreadsheetId, String range) {
@@ -209,49 +278,6 @@ public class UnshippedRepository {
         }
     }
 
-    private boolean isToday(String rawDate, Calendar today) {
-        if (TextUtils.isEmpty(rawDate)) {
-            return false;
-        }
-        String value = rawDate.trim();
-        for (String todayText : buildTodayVariants(today)) {
-            if (value.startsWith(todayText)) {
-                return true;
-            }
-        }
-
-        Calendar parsed = parseDateCell(value);
-        if (parsed == null) {
-            return false;
-        }
-        return parsed.get(Calendar.YEAR) == today.get(Calendar.YEAR)
-                && parsed.get(Calendar.DAY_OF_YEAR) == today.get(Calendar.DAY_OF_YEAR);
-    }
-
-    private Calendar parseDateCell(String rawDate) {
-        if (TextUtils.isEmpty(rawDate)) {
-            return null;
-        }
-
-        String value = rawDate.trim();
-        for (String pattern : supportedPatterns()) {
-            SimpleDateFormat format = new SimpleDateFormat(pattern, Locale.KOREA);
-            format.setLenient(false);
-            try {
-                java.util.Date parsedDate = format.parse(value);
-                if (parsedDate == null) {
-                    continue;
-                }
-                Calendar calendar = Calendar.getInstance(Locale.KOREA);
-                calendar.setTime(parsedDate);
-                clearTime(calendar);
-                return calendar;
-            } catch (ParseException ignored) {
-            }
-        }
-        return null;
-    }
-
     private void clearTime(Calendar calendar) {
         calendar.set(Calendar.HOUR_OF_DAY, 0);
         calendar.set(Calendar.MINUTE, 0);
@@ -259,20 +285,11 @@ public class UnshippedRepository {
         calendar.set(Calendar.MILLISECOND, 0);
     }
 
-    private List<String> buildTodayVariants(Calendar today) {
-        List<String> variants = new ArrayList<>();
-        variants.add(new SimpleDateFormat("yyyy-MM-dd", Locale.KOREA).format(today.getTime()));
-        variants.add(new SimpleDateFormat("yyyy.MM.dd", Locale.KOREA).format(today.getTime()));
-        variants.add(new SimpleDateFormat("yyyy. M. d", Locale.KOREA).format(today.getTime()));
-        variants.add(new SimpleDateFormat("yyyy/M/d", Locale.KOREA).format(today.getTime()));
-        variants.add(new SimpleDateFormat("M/d/yyyy", Locale.KOREA).format(today.getTime()));
-        return variants;
-    }
-
     private String[] supportedPatterns() {
         return new String[]{
                 "yyyy-MM-dd",
                 "yyyy.MM.dd",
+                "yyyy.M.d",
                 "yyyy. M. d",
                 "yyyy/MM/dd",
                 "yyyy/M/d",
@@ -359,11 +376,11 @@ public class UnshippedRepository {
         }
     }
 
-    public static final class TodaySnapshot {
+    public static final class DateSnapshot {
         private final List<String> vendors;
         private final List<UnshippedItem> items;
 
-        private TodaySnapshot(List<String> vendors, List<UnshippedItem> items) {
+        private DateSnapshot(List<String> vendors, List<UnshippedItem> items) {
             this.vendors = vendors;
             this.items = items;
         }

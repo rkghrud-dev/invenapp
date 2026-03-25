@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">재고관리</string>
-
     <string name="home_title">샤플라이\n도우미</string>
     <string name="home_admin_entry">관리자모드</string>
     <string name="home_subtitle">1번은 재고관리, 2번은 판매량 순위, 3번은 미출고조회, 6번은 옵션으로 연결하고 자물쇠 버튼에서 관리자모드로 들어갑니다.</string>
@@ -14,13 +13,12 @@
     <string name="home_ranking_title">판매량 순위</string>
     <string name="home_ranking_subtitle">오늘, 날짜별, 월별 판매갯수 순위를 Top 10·30·50으로 확인합니다.</string>
     <string name="home_unshipped_title">미출고조회</string>
-    <string name="home_unshipped_subtitle">오늘 발주일 기준으로 발주사를 불러와 미출고 정보와 판매자 피드백을 확인합니다.</string>
+    <string name="home_unshipped_subtitle">날짜 구분행 기준으로 발주사를 불러와 미출고 정보와 판매자 피드백을 확인합니다.</string>
     <string name="home_future_title">추후 개발</string>
     <string name="home_options_title">옵션</string>
     <string name="home_options_subtitle">다크모드처럼 화면 표시 중심 옵션을 간단히 관리합니다.</string>
     <string name="home_future_subtitle">다음 단계에서 추가할 기능 자리입니다.</string>
     <string name="home_future_message">이 메뉴는 추후 개발 예정입니다.</string>
-
     <string name="inventory_title">재고관리</string>
     <string name="inventory_subtitle">상품코드나 주문코드, 상품명으로 검색해 현재 재고와 오늘 판매, 실재고를 함께 확인합니다.</string>
     <string name="search_section_title">빠른 조회</string>
@@ -44,7 +42,6 @@
     <string name="status_connected_account">연결된 계정: %1$s</string>
     <string name="status_token_expired">Google 연결이 만료되었습니다. 옵션에서 다시 확인해 주세요.</string>
     <string name="status_unknown_error">알 수 없는 오류</string>
-
     <string name="sales_ranking_title">판매량 순위</string>
     <string name="sales_ranking_subtitle">내 판매량 DB 시트를 읽어서 판매갯수 기준 순위를 보여주고, 판매수량 합계도 함께 표시합니다.</string>
     <string name="ranking_filter_title">조회 조건</string>
@@ -70,25 +67,26 @@
     <string name="ranking_sales_count_badge">판매 %1$d건</string>
     <string name="ranking_sales_qty_sum_line">판매수량합  %1$s</string>
     <string name="ranking_product_code_line">상품코드  %1$s</string>
-
     <string name="unshipped_title">미출고조회</string>
-    <string name="unshipped_subtitle">로드 버튼으로 오늘 발주일 데이터를 불러오고, 발주사별 미출고 정보와 결과를 확인한 뒤 판매자 피드백을 저장합니다.</string>
+    <string name="unshipped_subtitle">선택한 날짜 구분행을 찾아 해당 구간의 발주사별 미출고 정보와 결과를 확인한 뒤 판매자 피드백을 저장합니다.</string>
     <string name="unshipped_filter_title">조회 조건</string>
-    <string name="unshipped_load_today_button">오늘 미출고 로드</string>
+    <string name="unshipped_date_label">기준 날짜</string>
+    <string name="unshipped_date_button">날짜 선택</string>
+    <string name="unshipped_load_today_button">선택 날짜 미출고 로드</string>
     <string name="unshipped_vendor_label">발주사</string>
-    <string name="unshipped_query_button">결과 조회</string>
+    <string name="unshipped_query_button">발주사 결과 조회</string>
     <string name="unshipped_results_title">미출고 결과</string>
-    <string name="unshipped_empty_results">오늘 조건에 맞는 미출고 정보가 없습니다.</string>
-    <string name="unshipped_summary_idle">로드 버튼으로 오늘 발주사 목록을 불러오세요.</string>
-    <string name="unshipped_summary_loaded">오늘 날짜 · 발주사 %1$d개</string>
-    <string name="unshipped_summary_vendor">오늘 날짜 · %1$s · %2$d건</string>
-    <string name="unshipped_summary_no_items">오늘 날짜 · 미출고 없음</string>
-    <string name="unshipped_status_idle">로드 버튼으로 오늘 날짜 발주사를 불러오세요.</string>
-    <string name="unshipped_status_loading">오늘 미출고 정보를 불러오는 중입니다.</string>
-    <string name="unshipped_status_loaded">오늘 발주사 %1$d개를 불러왔습니다.</string>
-    <string name="unshipped_status_no_today">오늘 날짜에 맞는 미출고 정보가 없습니다.</string>
+    <string name="unshipped_empty_results">%1$s 조건에 맞는 미출고 정보가 없습니다.</string>
+    <string name="unshipped_summary_idle">%1$s 날짜를 선택한 뒤 로드 버튼을 누르세요.</string>
+    <string name="unshipped_summary_loaded">%1$s · 발주사 %2$d개</string>
+    <string name="unshipped_summary_vendor">%1$s · %2$s · %3$d건</string>
+    <string name="unshipped_summary_no_items">%1$s · 미출고 없음</string>
+    <string name="unshipped_status_idle">%1$s 날짜 구분행을 불러오려면 로드 버튼을 누르세요.</string>
+    <string name="unshipped_status_loading">%1$s 구간 미출고 정보를 불러오는 중입니다.</string>
+    <string name="unshipped_status_loaded">%1$s 구간 발주사 %2$d개를 불러왔습니다.</string>
+    <string name="unshipped_status_no_today">%1$s 날짜 구분행에 맞는 미출고 정보가 없습니다.</string>
     <string name="unshipped_status_need_vendor">발주사를 먼저 선택하세요.</string>
-    <string name="unshipped_status_result_count">%1$s 발주사 기준 %2$d건을 찾았습니다.</string>
+    <string name="unshipped_status_result_count">%1$s 날짜 · %2$s 발주사 기준 %3$d건을 찾았습니다.</string>
     <string name="unshipped_status_no_vendor_result">선택한 발주사에 해당하는 미출고 정보가 없습니다.</string>
     <string name="unshipped_status_sheet_not_ready">미출고 조회용 스프레드시트 ID를 먼저 확인해 주세요.</string>
     <string name="unshipped_status_need_feedback">저장할 판매자 피드백을 입력하세요.</string>
@@ -113,7 +111,6 @@
     <string name="unshipped_direct_input_button">직접입력</string>
     <string name="unshipped_feedback_hint">판매자 피드백 입력</string>
     <string name="unshipped_save_button">저장</string>
-
     <string name="settings_title">옵션</string>
     <string name="settings_subtitle">화면 모드와 Google 연결, 시트 설정, 관리자 알림과 데이터 수집을 한 곳에 모았습니다.</string>
     <string name="options_screen_title">옵션</string>
@@ -145,7 +142,6 @@
     <string name="options_google_checking">Google 연결 상태를 확인하는 중입니다.</string>
     <string name="options_google_check_done">Google 연결 확인이 완료되었습니다.</string>
     <string name="options_google_check_failed">Google 연결 확인 실패: %1$s</string>
-
     <string name="admin_title">관리자 모드</string>
     <string name="admin_subtitle">Google 연결 확인, 판매량 DB 수집, 관리자 알림과 시트 설정을 관리합니다.</string>
     <string name="admin_tools_title">관리자 도구</string>
@@ -172,7 +168,6 @@
     <string name="admin_notification_channel_description">관리자 전용 판매량 DB 수집 알림입니다.</string>
     <string name="admin_notification_title">판매량 DB 수집 시간입니다</string>
     <string name="admin_notification_text">관리자모드를 열어 지금 데이터를 수집하세요.</string>
-
     <string name="settings_note">상품정보 시트 설정입니다. 재고 원본 시트 구조가 바뀔 때만 수정하면 됩니다.</string>
     <string name="settings_sales_note">오늘 판매 시트 설정입니다. 상품코드로 찾은 뒤 판매수량을 합산해 실재고를 계산합니다.</string>
     <string name="label_spreadsheet_id">스프레드시트 ID 또는 전체 URL</string>
@@ -197,7 +192,6 @@
     <string name="settings_sales_required_message">오늘 판매 시트는 ID, 범위, 상품코드 컬럼, 판매수량 컬럼을 모두 입력해야 합니다.</string>
     <string name="settings_ranking_required_message">판매량 DB 스프레드시트 ID를 입력해야 합니다.</string>
     <string name="settings_saved_message">설정을 저장했습니다.</string>
-
     <string name="settings_lock_title">관리자 비밀번호</string>
     <string name="settings_lock_summary">관리자에게 문의하세요.</string>
     <string name="settings_lock_fixed_summary">관리자에게 문의하세요.</string>
@@ -210,7 +204,6 @@
     <string name="settings_lock_password_short">비밀번호는 4자리 이상으로 입력해 주세요.</string>
     <string name="settings_lock_password_mismatch">비밀번호가 서로 다릅니다.</string>
     <string name="settings_lock_password_wrong">비밀번호가 맞지 않습니다.</string>
-
     <string name="result_stock_label">재고</string>
     <string name="result_today_sold_label">오늘 판매</string>
     <string name="result_actual_stock_label">실재고</string>
@@ -220,5 +213,3 @@
     <string name="result_price_unavailable">없음</string>
     <string name="result_unavailable_value">계산 불가</string>
 </resources>
-
-
