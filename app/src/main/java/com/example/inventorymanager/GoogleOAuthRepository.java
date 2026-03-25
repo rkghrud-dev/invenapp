@@ -8,6 +8,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -40,12 +41,13 @@ public class GoogleOAuthRepository {
     }
 
     public boolean hasStoredAuthorization() {
-        if (!TextUtils.isEmpty(preferences.getString(KEY_REFRESH_TOKEN, ""))) {
+        if (hasStoredRefreshToken()) {
             return true;
         }
 
         try {
-            return !TextUtils.isEmpty(readAssetJson(ASSET_TOKEN_SEED).optString("refresh_token", "").trim());
+            JSONObject seed = readOptionalAssetJson(ASSET_TOKEN_SEED);
+            return seed != null && !TextUtils.isEmpty(seed.optString("refresh_token", "").trim());
         } catch (IOException ignored) {
             return false;
         }
@@ -80,7 +82,7 @@ public class GoogleOAuthRepository {
 
         String refreshToken = preferences.getString(KEY_REFRESH_TOKEN, "").trim();
         if (TextUtils.isEmpty(refreshToken)) {
-            throw new IOException("기존 승인 토큰을 찾지 못했습니다. PC 프로젝트 token 파일을 다시 가져와야 합니다.");
+            throw new IOException(missingTokenSeedMessage());
         }
 
         ClientConfig clientConfig = readClientConfig();
@@ -152,15 +154,22 @@ public class GoogleOAuthRepository {
     }
 
     private void bootstrapFromAssetsIfNeeded() throws IOException {
-        JSONObject seed = readAssetJson(ASSET_TOKEN_SEED);
-        String seedRefreshToken = seed.optString("refresh_token", "").trim();
         String storedRefreshToken = preferences.getString(KEY_REFRESH_TOKEN, "").trim();
+        JSONObject seed = readOptionalAssetJson(ASSET_TOKEN_SEED);
 
+        if (seed == null) {
+            if (!TextUtils.isEmpty(storedRefreshToken)) {
+                return;
+            }
+            throw new IOException(missingTokenSeedMessage());
+        }
+
+        String seedRefreshToken = seed.optString("refresh_token", "").trim();
         if (TextUtils.isEmpty(seedRefreshToken)) {
             if (!TextUtils.isEmpty(storedRefreshToken)) {
                 return;
             }
-            throw new IOException("PC 앱의 저장된 Google refresh token을 찾지 못했습니다.");
+            throw new IOException("google_token_seed.json에 refresh_token이 없습니다. 파일을 다시 확인해 주세요.");
         }
 
         if (seedRefreshToken.equals(storedRefreshToken)) {
@@ -176,17 +185,23 @@ public class GoogleOAuthRepository {
     }
 
     private ClientConfig readClientConfig() throws IOException {
-        JSONObject seed = readAssetJson(ASSET_TOKEN_SEED);
-        String seedClientId = seed.optString("client_id", "").trim();
-        String seedClientSecret = seed.optString("client_secret", "").trim();
-        String seedTokenUri = seed.optString("token_uri", "").trim();
-        if (!TextUtils.isEmpty(seedClientId)
-                && !TextUtils.isEmpty(seedClientSecret)
-                && !TextUtils.isEmpty(seedTokenUri)) {
-            return new ClientConfig(seedClientId, seedClientSecret, seedTokenUri);
+        JSONObject seed = readOptionalAssetJson(ASSET_TOKEN_SEED);
+        if (seed != null) {
+            String seedClientId = seed.optString("client_id", "").trim();
+            String seedClientSecret = seed.optString("client_secret", "").trim();
+            String seedTokenUri = seed.optString("token_uri", "").trim();
+            if (!TextUtils.isEmpty(seedClientId)
+                    && !TextUtils.isEmpty(seedClientSecret)
+                    && !TextUtils.isEmpty(seedTokenUri)) {
+                return new ClientConfig(seedClientId, seedClientSecret, seedTokenUri);
+            }
         }
 
-        JSONObject root = readAssetJson(ASSET_CLIENT_CONFIG);
+        JSONObject root = readRequiredAssetJson(
+                ASSET_CLIENT_CONFIG,
+                missingClientConfigMessage(),
+                "google_oauth_client.json 형식을 읽지 못했습니다."
+        );
         JSONObject installed = root.optJSONObject("installed");
         if (installed == null) {
             throw new IOException("앱에 포함된 Google OAuth 설정 형식이 올바르지 않습니다.");
@@ -202,12 +217,46 @@ public class GoogleOAuthRepository {
         return new ClientConfig(clientId, clientSecret, tokenUri);
     }
 
-    private JSONObject readAssetJson(String assetName) throws IOException {
+    private JSONObject readOptionalAssetJson(String assetName) throws IOException {
         try (InputStream stream = appContext.getAssets().open(assetName)) {
             return new JSONObject(readStream(stream));
+        } catch (FileNotFoundException exception) {
+            return null;
         } catch (JSONException exception) {
-            throw new IOException("앱에 포함된 Google 설정 파일을 읽지 못했습니다.", exception);
+            throw new IOException(parseAssetErrorMessage(assetName), exception);
         }
+    }
+
+    private JSONObject readRequiredAssetJson(String assetName, String missingMessage, String parseMessage) throws IOException {
+        try (InputStream stream = appContext.getAssets().open(assetName)) {
+            return new JSONObject(readStream(stream));
+        } catch (FileNotFoundException exception) {
+            throw new IOException(missingMessage, exception);
+        } catch (JSONException exception) {
+            throw new IOException(parseMessage, exception);
+        }
+    }
+
+    private boolean hasStoredRefreshToken() {
+        return !TextUtils.isEmpty(preferences.getString(KEY_REFRESH_TOKEN, "").trim());
+    }
+
+    private String missingTokenSeedMessage() {
+        return "Google 승인 토큰 파일이 없습니다. app/src/main/assets/google_token_seed.json 파일을 넣어 주세요.";
+    }
+
+    private String missingClientConfigMessage() {
+        return "Google OAuth 설정 파일이 없습니다. app/src/main/assets/google_oauth_client.json 파일을 넣어 주세요.";
+    }
+
+    private String parseAssetErrorMessage(String assetName) {
+        if (ASSET_TOKEN_SEED.equals(assetName)) {
+            return "google_token_seed.json 형식을 읽지 못했습니다.";
+        }
+        if (ASSET_CLIENT_CONFIG.equals(assetName)) {
+            return "google_oauth_client.json 형식을 읽지 못했습니다.";
+        }
+        return "앱에 포함된 Google 설정 파일을 읽지 못했습니다.";
     }
 
     private String buildRefreshBody(ClientConfig clientConfig, String refreshToken) throws IOException {
