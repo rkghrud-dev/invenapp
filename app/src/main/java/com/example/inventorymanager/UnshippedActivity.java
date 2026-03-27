@@ -13,11 +13,14 @@ import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import androidx.activity.OnBackPressedCallback;
+
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ExecutorService;
@@ -35,6 +38,7 @@ public class UnshippedActivity extends ThemedActivity implements UnshippedAdapte
     private UnshippedAdapter adapter;
     private ArrayAdapter<String> vendorAdapter;
 
+    private View filtersCard;
     private Button selectedDateButton;
     private Spinner vendorSpinner;
     private TextView querySummary;
@@ -43,8 +47,11 @@ public class UnshippedActivity extends ThemedActivity implements UnshippedAdapte
     private ProgressBar progressBar;
     private Button loadDateButton;
     private Button queryButton;
+    private ListView resultsList;
 
     private List<UnshippedItem> loadedItems = Collections.emptyList();
+    private List<String> loadedVendors = Collections.emptyList();
+    private boolean resultsOnlyMode;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,6 +63,7 @@ public class UnshippedActivity extends ThemedActivity implements UnshippedAdapte
         googleOAuthRepository = new GoogleOAuthRepository(this);
         unshippedRepository = new UnshippedRepository();
 
+        filtersCard = findViewById(R.id.filters_card);
         selectedDateButton = findViewById(R.id.selected_date_button);
         vendorSpinner = findViewById(R.id.vendor_spinner);
         querySummary = findViewById(R.id.query_summary);
@@ -64,7 +72,7 @@ public class UnshippedActivity extends ThemedActivity implements UnshippedAdapte
         progressBar = findViewById(R.id.progress_bar);
         loadDateButton = findViewById(R.id.load_today_button);
         queryButton = findViewById(R.id.query_button);
-        ListView resultsList = findViewById(R.id.results_list);
+        resultsList = findViewById(R.id.results_list);
 
         adapter = new UnshippedAdapter(this, this);
         resultsList.setAdapter(adapter);
@@ -78,8 +86,22 @@ public class UnshippedActivity extends ThemedActivity implements UnshippedAdapte
         loadDateButton.setOnClickListener(v -> loadSelectedDateRows());
         queryButton.setOnClickListener(v -> querySelectedVendor());
 
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                if (resultsOnlyMode) {
+                    restoreLoadedStage();
+                    return;
+                }
+                setEnabled(false);
+                getOnBackPressedDispatcher().onBackPressed();
+                setEnabled(true);
+            }
+        });
+
         updateSelectedDateButton();
         updateVendorOptions(Collections.emptyList());
+        setResultsOnlyMode(false);
         showIdleState();
     }
 
@@ -102,7 +124,7 @@ public class UnshippedActivity extends ThemedActivity implements UnshippedAdapte
     private void showIdleState() {
         String dateText = getSelectedDateText();
         querySummary.setText(getString(R.string.unshipped_summary_idle, dateText));
-        emptyView.setText(getString(R.string.unshipped_empty_results, dateText));
+        emptyView.setText(getString(R.string.unshipped_empty_results, getSelectedRangeText()));
         showStatus(getString(R.string.unshipped_status_idle, dateText));
     }
 
@@ -125,8 +147,10 @@ public class UnshippedActivity extends ThemedActivity implements UnshippedAdapte
 
     private void resetLoadedStateForSelectedDate() {
         loadedItems = Collections.emptyList();
+        loadedVendors = Collections.emptyList();
         updateVendorOptions(Collections.emptyList());
         adapter.setItems(null);
+        setResultsOnlyMode(false);
         showIdleState();
     }
 
@@ -140,24 +164,26 @@ public class UnshippedActivity extends ThemedActivity implements UnshippedAdapte
         Calendar targetDate = (Calendar) selectedDate.clone();
         String dateText = formatDate(targetDate);
 
+        setResultsOnlyMode(false);
         setLoading(true);
         showStatus(getString(R.string.unshipped_status_loading, dateText));
-        emptyView.setText(getString(R.string.unshipped_empty_results, dateText));
+        emptyView.setText(getString(R.string.unshipped_empty_results, getSelectedRangeText()));
         adapter.setItems(null);
 
         executor.execute(() -> {
             try {
-                UnshippedRepository.DateSnapshot snapshot = loadDateSnapshot(settings.salesSpreadsheetId, targetDate);
+                UnshippedRepository.DateSnapshot snapshot = loadDateSnapshot(settings, targetDate);
                 mainHandler.post(() -> {
                     loadedItems = snapshot.getItems();
-                    updateVendorOptions(snapshot.getVendors());
+                    loadedVendors = snapshot.getVendors();
+                    updateVendorOptions(loadedVendors);
                     adapter.setItems(null);
                     if (snapshot.getItems().isEmpty()) {
                         querySummary.setText(getString(R.string.unshipped_summary_no_items, dateText));
                         showStatus(getString(R.string.unshipped_status_no_today, dateText));
                     } else {
-                        querySummary.setText(getString(R.string.unshipped_summary_loaded, dateText, snapshot.getVendors().size()));
-                        showStatus(getString(R.string.unshipped_status_loaded, dateText, snapshot.getVendors().size()));
+                        querySummary.setText(getString(R.string.unshipped_summary_loaded, dateText, loadedVendors.size()));
+                        showStatus(getString(R.string.unshipped_status_loaded, dateText, loadedVendors.size()));
                     }
                     setLoading(false);
                 });
@@ -165,9 +191,10 @@ public class UnshippedActivity extends ThemedActivity implements UnshippedAdapte
                 googleOAuthRepository.clearAccessToken();
                 mainHandler.post(() -> {
                     loadedItems = Collections.emptyList();
+                    loadedVendors = Collections.emptyList();
                     updateVendorOptions(Collections.emptyList());
                     adapter.setItems(null);
-                    emptyView.setText(getString(R.string.unshipped_empty_results, dateText));
+                    emptyView.setText(getString(R.string.unshipped_empty_results, getSelectedRangeText()));
                     showStatus(safeMessage(exception));
                     setLoading(false);
                 });
@@ -175,25 +202,26 @@ public class UnshippedActivity extends ThemedActivity implements UnshippedAdapte
         });
     }
 
-    private UnshippedRepository.DateSnapshot loadDateSnapshot(String spreadsheetId, Calendar targetDate) throws IOException {
+    private UnshippedRepository.DateSnapshot loadDateSnapshot(SettingsStore.SheetSettings settings, Calendar targetDate) throws IOException {
         GoogleOAuthRepository.AuthSession session = googleOAuthRepository.ensureAccessToken();
         try {
-            return unshippedRepository.loadDateSnapshot(spreadsheetId, targetDate, session.getAccessToken());
+            return unshippedRepository.loadDateSnapshot(settings, targetDate, session.getAccessToken());
         } catch (IOException firstException) {
             if (!isAuthExpiredMessage(firstException.getMessage())) {
                 throw firstException;
             }
             GoogleOAuthRepository.AuthSession refreshedSession = googleOAuthRepository.refreshAccessToken();
-            return unshippedRepository.loadDateSnapshot(spreadsheetId, targetDate, refreshedSession.getAccessToken());
+            return unshippedRepository.loadDateSnapshot(settings, targetDate, refreshedSession.getAccessToken());
         }
     }
 
     private void querySelectedVendor() {
         String dateText = getSelectedDateText();
         if (loadedItems.isEmpty()) {
+            setResultsOnlyMode(false);
             adapter.setItems(null);
             querySummary.setText(getString(R.string.unshipped_summary_no_items, dateText));
-            emptyView.setText(getString(R.string.unshipped_empty_results, dateText));
+            emptyView.setText(getString(R.string.unshipped_empty_results, getSelectedRangeText()));
             showStatus(getString(R.string.unshipped_status_no_today, dateText));
             return;
         }
@@ -204,25 +232,71 @@ public class UnshippedActivity extends ThemedActivity implements UnshippedAdapte
             return;
         }
 
-        List<UnshippedItem> filtered = new ArrayList<>();
-        for (UnshippedItem item : loadedItems) {
-            if (vendor.equals(item.getVendor())) {
-                filtered.add(item);
-            }
-        }
-
-        adapter.setItems(filtered);
-        emptyView.setText(R.string.unshipped_none);
-        querySummary.setText(getString(R.string.unshipped_summary_vendor, dateText, vendor, filtered.size()));
-        if (filtered.isEmpty()) {
+        List<UnshippedItem> groupedItems = buildVendorItemsByDate(vendor);
+        int itemCount = countActualItems(groupedItems);
+        adapter.setItems(groupedItems);
+        resultsList.post(() -> resultsList.setSelection(0));
+        emptyView.setText(getString(R.string.unshipped_empty_results, getSelectedRangeText()));
+        querySummary.setText(getString(R.string.unshipped_summary_vendor, dateText, vendor, itemCount));
+        if (itemCount == 0) {
+            setResultsOnlyMode(false);
             showStatus(getString(R.string.unshipped_status_no_vendor_result));
             return;
         }
-        showStatus(getString(R.string.unshipped_status_result_count, dateText, vendor, filtered.size()));
+        setResultsOnlyMode(true);
+        showStatus(getString(R.string.unshipped_status_result_count, dateText, vendor, itemCount));
+    }
+
+    private void restoreLoadedStage() {
+        setResultsOnlyMode(false);
+        adapter.setItems(null);
+        emptyView.setText(getString(R.string.unshipped_empty_results, getSelectedRangeText()));
+
+        if (loadedItems.isEmpty()) {
+            showIdleState();
+            return;
+        }
+
+        String dateText = getSelectedDateText();
+        querySummary.setText(getString(R.string.unshipped_summary_loaded, dateText, loadedVendors.size()));
+        showStatus(getString(R.string.unshipped_status_loaded, dateText, loadedVendors.size()));
+    }
+
+    private List<UnshippedItem> buildVendorItemsByDate(String vendor) {
+        List<UnshippedItem> vendorItems = new ArrayList<>();
+        for (UnshippedItem item : loadedItems) {
+            if (vendor.equals(item.getVendor())) {
+                vendorItems.add(item);
+            }
+        }
+        vendorItems.sort(Comparator
+                .comparing(UnshippedItem::getDateSortKey)
+                .thenComparingInt(UnshippedItem::getSheetRowNumber));
+
+        List<UnshippedItem> groupedItems = new ArrayList<>();
+        String lastDateLabel = "";
+        for (UnshippedItem item : vendorItems) {
+            if (!TextUtils.equals(lastDateLabel, item.getDateLabel())) {
+                lastDateLabel = item.getDateLabel();
+                groupedItems.add(UnshippedItem.createDateHeader(lastDateLabel));
+            }
+            groupedItems.add(item);
+        }
+        return groupedItems;
+    }
+
+    private int countActualItems(List<UnshippedItem> items) {
+        int count = 0;
+        for (UnshippedItem item : items) {
+            if (!item.isDateHeader()) {
+                count++;
+            }
+        }
+        return count;
     }
 
     private void saveFeedback(UnshippedItem item, String feedback) {
-        if (item == null) {
+        if (item == null || item.isDateHeader()) {
             return;
         }
 
@@ -288,13 +362,27 @@ public class UnshippedActivity extends ThemedActivity implements UnshippedAdapte
         vendorSpinner.setSelection(0);
     }
 
+    private void setResultsOnlyMode(boolean resultsOnlyMode) {
+        this.resultsOnlyMode = resultsOnlyMode;
+        filtersCard.setVisibility(resultsOnlyMode ? View.GONE : View.VISIBLE);
+        querySummary.setVisibility(resultsOnlyMode ? View.VISIBLE : View.GONE);
+    }
+
     private String getSelectedVendor() {
         Object selectedItem = vendorSpinner.getSelectedItem();
-        return selectedItem == null ? "" : selectedItem.toString().trim();
+        if (selectedItem == null) {
+            return "";
+        }
+        String vendor = selectedItem.toString().trim();
+        return getString(R.string.unshipped_none).equals(vendor) ? "" : vendor;
     }
 
     private String getSelectedDateText() {
         return formatDate(selectedDate);
+    }
+
+    private String getSelectedRangeText() {
+        return getSelectedDateText() + " 이후";
     }
 
     private String formatDate(Calendar date) {

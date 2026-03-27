@@ -5,7 +5,7 @@
     android:background="@drawable/bg_screen"
     android:orientation="vertical"
     android:paddingLeft="20dp"
-    android:paddingTop="24dp"
+    android:paddingTop="16dp"
     android:paddingRight="20dp"
     android:paddingBottom="16dp">
 
@@ -14,29 +14,30 @@
         android:layout_height="wrap_content"
         android:background="@drawable/bg_card_tinted"
         android:orientation="vertical"
-        android:padding="24dp">
+        android:padding="14dp">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/unshipped_title"
             android:textColor="?attr/paletteTextPrimary"
-            android:textSize="32sp"
+            android:textSize="24sp"
             android:textStyle="bold" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
             android:text="@string/unshipped_subtitle"
             android:textColor="?attr/paletteTextSecondary"
-            android:textSize="15sp" />
+            android:textSize="15sp"
+            android:visibility="gone" />
 
         <TextView
             android:id="@+id/query_summary"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
+            android:layout_marginTop="12dp"
+            android:visibility="gone"
             android:background="@drawable/bg_status_chip"
             android:paddingLeft="14dp"
             android:paddingTop="10dp"
@@ -48,12 +49,13 @@
     </LinearLayout>
 
     <LinearLayout
+        android:id="@+id/filters_card"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="12dp"
         android:background="@drawable/bg_card_primary"
         android:orientation="vertical"
-        android:padding="20dp">
+        android:padding="14dp">
 
         <TextView
             android:layout_width="wrap_content"
@@ -157,36 +159,43 @@
     </LinearLayout>
 
     <TextView
+        android:id="@+id/results_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="18dp"
+        android:layout_marginTop="14dp"
         android:text="@string/unshipped_results_title"
         android:textColor="?attr/paletteTextPrimary"
         android:textSize="18sp"
         android:textStyle="bold" />
 
-    <ListView
-        android:id="@+id/results_list"
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_marginTop="12dp"
-        android:layout_weight="1"
-        android:clipToPadding="false"
-        android:divider="@android:color/transparent"
-        android:dividerHeight="12dp"
-        android:paddingBottom="8dp" />
+        android:layout_marginTop="10dp"
+        android:layout_weight="1">
 
-    <TextView
-        android:id="@+id/empty_view"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:background="@drawable/bg_card_primary"
-        android:gravity="center"
-        android:padding="24dp"
-        android:text="@string/unshipped_date_button"
-        android:textColor="?attr/paletteTextSecondary"
-        android:textSize="15sp"
-        android:visibility="gone" />
+        <ListView
+            android:id="@+id/results_list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:divider="@android:color/transparent"
+            android:dividerHeight="12dp"
+            android:paddingBottom="8dp" />
+
+        <TextView
+            android:id="@+id/empty_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:background="@drawable/bg_card_primary"
+            android:gravity="center"
+            android:padding="24dp"
+            android:text="@string/unshipped_date_button"
+            android:textColor="?attr/paletteTextSecondary"
+            android:textSize="15sp"
+            android:visibility="gone" />
+
+    </FrameLayout>
 
 </LinearLayout>

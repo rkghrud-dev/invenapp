@@ -9,7 +9,7 @@
     android:focusableInTouchMode="true"
     android:orientation="vertical"
     android:paddingLeft="20dp"
-    android:paddingTop="24dp"
+    android:paddingTop="16dp"
     android:paddingRight="20dp"
     android:paddingBottom="16dp">
 
@@ -18,33 +18,25 @@
         android:layout_height="wrap_content"
         android:background="@drawable/bg_card_tinted"
         android:orientation="vertical"
-        android:padding="24dp">
+        android:padding="18dp">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/inventory_title"
             android:textColor="?attr/paletteTextPrimary"
-            android:textSize="32sp"
+            android:textSize="28sp"
             android:textStyle="bold" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="@string/inventory_subtitle"
-            android:textColor="?attr/paletteTextSecondary"
-            android:textSize="15sp" />
 
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="12dp"
         android:background="@drawable/bg_card_primary"
         android:orientation="vertical"
-        android:padding="20dp">
+        android:padding="18dp">
 
         <TextView
             android:layout_width="wrap_content"
@@ -57,16 +49,16 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
             android:text="@string/search_section_subtitle"
             android:textColor="?attr/paletteTextSecondary"
-            android:textSize="14sp" />
+            android:textSize="14sp"
+            android:visibility="gone" />
 
         <EditText
             android:id="@+id/search_input"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="12dp"
             android:background="@drawable/bg_input"
             android:hint="@string/search_hint"
             android:imeOptions="actionSearch"
@@ -89,7 +81,7 @@
             <Button
                 android:id="@+id/search_button"
                 android:layout_width="0dp"
-                android:layout_height="52dp"
+                android:layout_height="48dp"
                 android:layout_weight="1"
                 android:background="@drawable/bg_button_primary"
                 android:text="@string/search_button"
@@ -100,8 +92,8 @@
             <Button
                 android:id="@+id/save_search_button"
                 android:layout_width="0dp"
-                android:layout_height="52dp"
-                android:layout_marginLeft="10dp"
+                android:layout_height="48dp"
+                android:layout_marginLeft="8dp"
                 android:layout_weight="1"
                 android:background="@drawable/bg_button_secondary"
                 android:text="@string/save_button"
@@ -112,8 +104,8 @@
             <Button
                 android:id="@+id/load_history_button"
                 android:layout_width="0dp"
-                android:layout_height="52dp"
-                android:layout_marginLeft="10dp"
+                android:layout_height="48dp"
+                android:layout_marginLeft="8dp"
                 android:layout_weight="1"
                 android:background="@drawable/bg_button_secondary"
                 android:text="@string/load_button"
@@ -126,7 +118,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="14dp"
+            android:layout_marginTop="12dp"
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
@@ -144,7 +136,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="10dp"
                 android:textColor="?attr/paletteTextSecondary"
-                android:textSize="14sp" />
+                android:textSize="13sp" />
 
         </LinearLayout>
 
@@ -153,34 +145,39 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="18dp"
+        android:layout_marginTop="14dp"
         android:text="@string/results_title"
         android:textColor="?attr/paletteTextPrimary"
         android:textSize="18sp"
         android:textStyle="bold" />
 
-    <ListView
-        android:id="@+id/results_list"
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_marginTop="12dp"
-        android:layout_weight="1"
-        android:clipToPadding="false"
-        android:divider="@android:color/transparent"
-        android:dividerHeight="12dp"
-        android:paddingBottom="8dp" />
+        android:layout_marginTop="10dp"
+        android:layout_weight="1">
 
-    <TextView
-        android:id="@+id/empty_view"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:background="@drawable/bg_card_primary"
-        android:gravity="center"
-        android:padding="24dp"
-        android:text="@string/empty_results"
-        android:textColor="?attr/paletteTextSecondary"
-        android:textSize="15sp"
-        android:visibility="gone" />
+        <ListView
+            android:id="@+id/results_list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:divider="@android:color/transparent"
+            android:dividerHeight="12dp"
+            android:paddingBottom="8dp" />
+
+        <TextView
+            android:id="@+id/empty_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/bg_card_primary"
+            android:gravity="center"
+            android:padding="24dp"
+            android:text="@string/empty_results"
+            android:textColor="?attr/paletteTextSecondary"
+            android:textSize="15sp"
+            android:visibility="gone" />
+
+    </FrameLayout>
 
 </LinearLayout>

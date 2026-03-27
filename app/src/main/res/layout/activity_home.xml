@@ -4,25 +4,29 @@
     android:layout_height="match_parent"
     android:background="@drawable/bg_screen"
     android:fillViewport="true">
+
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:orientation="vertical"
         android:paddingLeft="20dp"
         android:paddingTop="24dp"
         android:paddingRight="20dp"
         android:paddingBottom="24dp">
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@drawable/bg_card_tinted"
             android:orientation="vertical"
             android:padding="24dp">
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
+
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
@@ -31,6 +35,7 @@
                     android:text="@string/home_title"
                     android:textColor="?attr/paletteTextPrimary"
                     android:textSize="38sp" />
+
                 <LinearLayout
                     android:id="@+id/admin_entry"
                     android:layout_width="wrap_content"
@@ -44,10 +49,12 @@
                     android:paddingTop="10dp"
                     android:paddingRight="14dp"
                     android:paddingBottom="10dp">
+
                     <ImageView
                         android:layout_width="18dp"
                         android:layout_height="18dp"
                         android:src="@android:drawable/ic_lock_lock" />
+
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -59,11 +66,13 @@
                 </LinearLayout>
             </LinearLayout>
         </LinearLayout>
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:orientation="horizontal">
+
             <LinearLayout
                 android:id="@+id/module_inventory"
                 android:layout_width="0dp"
@@ -74,6 +83,7 @@
                 android:focusable="true"
                 android:orientation="vertical"
                 android:padding="20dp">
+
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -81,6 +91,7 @@
                     android:textColor="?attr/paletteTextPrimary"
                     android:textSize="20sp"
                     android:textStyle="bold" />
+
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -89,6 +100,7 @@
                     android:textColor="?attr/paletteTextSecondary"
                     android:textSize="14sp" />
             </LinearLayout>
+
             <LinearLayout
                 android:id="@+id/module_orders"
                 android:layout_width="0dp"
@@ -100,6 +112,7 @@
                 android:focusable="true"
                 android:orientation="vertical"
                 android:padding="20dp">
+
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -107,6 +120,7 @@
                     android:textColor="?attr/paletteTextPrimary"
                     android:textSize="20sp"
                     android:textStyle="bold" />
+
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -116,11 +130,13 @@
                     android:textSize="14sp" />
             </LinearLayout>
         </LinearLayout>
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
             android:orientation="horizontal">
+
             <LinearLayout
                 android:id="@+id/module_shipping"
                 android:layout_width="0dp"
@@ -131,6 +147,7 @@
                 android:focusable="true"
                 android:orientation="vertical"
                 android:padding="20dp">
+
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -138,6 +155,7 @@
                     android:textColor="?attr/paletteTextPrimary"
                     android:textSize="20sp"
                     android:textStyle="bold" />
+
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -146,6 +164,7 @@
                     android:textColor="?attr/paletteTextSecondary"
                     android:textSize="14sp" />
             </LinearLayout>
+
             <LinearLayout
                 android:id="@+id/module_clients"
                 android:layout_width="0dp"
@@ -157,6 +176,7 @@
                 android:focusable="true"
                 android:orientation="vertical"
                 android:padding="20dp">
+
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -164,6 +184,7 @@
                     android:textColor="?attr/paletteTextPrimary"
                     android:textSize="20sp"
                     android:textStyle="bold" />
+
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -173,11 +194,13 @@
                     android:textSize="14sp" />
             </LinearLayout>
         </LinearLayout>
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
             android:orientation="horizontal">
+
             <LinearLayout
                 android:id="@+id/module_reports"
                 android:layout_width="0dp"
@@ -188,6 +211,7 @@
                 android:focusable="true"
                 android:orientation="vertical"
                 android:padding="20dp">
+
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -195,6 +219,7 @@
                     android:textColor="?attr/paletteTextPrimary"
                     android:textSize="20sp"
                     android:textStyle="bold" />
+
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -203,6 +228,7 @@
                     android:textColor="?attr/paletteTextSecondary"
                     android:textSize="14sp" />
             </LinearLayout>
+
             <LinearLayout
                 android:id="@+id/module_options"
                 android:layout_width="0dp"
@@ -214,6 +240,7 @@
                 android:focusable="true"
                 android:orientation="vertical"
                 android:padding="20dp">
+
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -221,6 +248,7 @@
                     android:textColor="?attr/paletteTextPrimary"
                     android:textSize="20sp"
                     android:textStyle="bold" />
+
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -230,5 +258,20 @@
                     android:textSize="14sp" />
             </LinearLayout>
         </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <TextView
+            android:id="@+id/home_version"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="18dp"
+            android:textColor="?attr/paletteTextSecondary"
+            android:textSize="13sp" />
+
     </LinearLayout>
 </ScrollView>

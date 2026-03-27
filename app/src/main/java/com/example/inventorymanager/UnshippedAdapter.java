@@ -26,6 +26,9 @@ public class UnshippedAdapter extends BaseAdapter {
         void onSaveCustomFeedback(UnshippedItem item, String feedback);
     }
 
+    private static final int VIEW_TYPE_ITEM = 0;
+    private static final int VIEW_TYPE_DATE_HEADER = 1;
+
     private final Context context;
     private final LayoutInflater inflater;
     private final FeedbackListener listener;
@@ -63,11 +66,49 @@ public class UnshippedAdapter extends BaseAdapter {
 
     @Override
     public long getItemId(int position) {
-        return getItem(position).getSheetRowNumber();
+        UnshippedItem item = getItem(position);
+        if (item.isDateHeader()) {
+            return -1L * Math.abs(item.getDateLabel().hashCode());
+        }
+        return item.getSheetRowNumber();
+    }
+
+    @Override
+    public int getViewTypeCount() {
+        return 2;
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        return getItem(position).isDateHeader() ? VIEW_TYPE_DATE_HEADER : VIEW_TYPE_ITEM;
+    }
+
+    @Override
+    public boolean areAllItemsEnabled() {
+        return false;
+    }
+
+    @Override
+    public boolean isEnabled(int position) {
+        return !getItem(position).isDateHeader();
     }
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
+        UnshippedItem item = getItem(position);
+        if (item.isDateHeader()) {
+            DateHeaderHolder holder;
+            if (convertView == null) {
+                convertView = inflater.inflate(R.layout.item_unshipped_date_header, parent, false);
+                holder = new DateHeaderHolder(convertView);
+                convertView.setTag(holder);
+            } else {
+                holder = (DateHeaderHolder) convertView.getTag();
+            }
+            holder.title.setText(item.getDateLabel());
+            return convertView;
+        }
+
         ViewHolder holder;
         if (convertView == null) {
             convertView = inflater.inflate(R.layout.item_unshipped_result, parent, false);
@@ -77,8 +118,9 @@ public class UnshippedAdapter extends BaseAdapter {
             holder = (ViewHolder) convertView.getTag();
         }
 
-        UnshippedItem item = getItem(position);
         holder.orderCode.setText(valueOrFallback(item.getOrderCode(), context.getString(R.string.unshipped_order_code_fallback)));
+        bindResolvedOrder(holder.orderName, item);
+        holder.skuLocation.setText(context.getString(R.string.unshipped_sku_line, valueOrFallback(item.getSkuLocation(), context.getString(R.string.unshipped_none))));
         holder.reason.setText(context.getString(R.string.unshipped_reason_line, valueOrFallback(item.getReason(), context.getString(R.string.unshipped_none))));
         holder.supplyMemo.setText(context.getString(R.string.unshipped_supply_memo_line, valueOrFallback(item.getSupplyMemo(), context.getString(R.string.unshipped_none))));
         holder.result.setText(context.getString(R.string.unshipped_result_line, valueOrFallback(item.getResult(), context.getString(R.string.unshipped_none))));
@@ -137,6 +179,29 @@ public class UnshippedAdapter extends BaseAdapter {
         return convertView;
     }
 
+    private void bindResolvedOrder(TextView orderNameView, UnshippedItem item) {
+        String resolvedOrder = item.getResolvedOrderDisplay();
+        if (TextUtils.isEmpty(resolvedOrder) || sameDisplayText(item.getOrderCode(), resolvedOrder)) {
+            orderNameView.setText("");
+            orderNameView.setVisibility(View.GONE);
+            return;
+        }
+
+        orderNameView.setText(resolvedOrder);
+        orderNameView.setVisibility(View.VISIBLE);
+    }
+
+    private boolean sameDisplayText(String left, String right) {
+        return normalizeDisplayText(left).equals(normalizeDisplayText(right));
+    }
+
+    private String normalizeDisplayText(String value) {
+        if (value == null) {
+            return "";
+        }
+        return value.trim().replaceAll("\\s+", " ");
+    }
+
     private void openDialer(String phone) {
         if (TextUtils.isEmpty(phone)) {
             Toast.makeText(context, R.string.unshipped_phone_unavailable, Toast.LENGTH_SHORT).show();
@@ -169,8 +234,18 @@ public class UnshippedAdapter extends BaseAdapter {
         return TextUtils.isEmpty(value) ? fallback : value;
     }
 
+    private static final class DateHeaderHolder {
+        private final TextView title;
+
+        private DateHeaderHolder(View root) {
+            title = root.findViewById(R.id.item_date_header);
+        }
+    }
+
     private static final class ViewHolder {
         private final TextView orderCode;
+        private final TextView orderName;
+        private final TextView skuLocation;
         private final TextView reason;
         private final TextView supplyMemo;
         private final TextView result;
@@ -190,6 +265,8 @@ public class UnshippedAdapter extends BaseAdapter {
 
         private ViewHolder(View root) {
             orderCode = root.findViewById(R.id.item_order_code);
+            orderName = root.findViewById(R.id.item_order_name);
+            skuLocation = root.findViewById(R.id.item_sku_location);
             reason = root.findViewById(R.id.item_reason);
             supplyMemo = root.findViewById(R.id.item_supply_memo);
             result = root.findViewById(R.id.item_result);

@@ -20,9 +20,12 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -33,8 +36,11 @@ public class UnshippedRepository {
 
     private static final String UNSHIPPED_SHEET = "미출고정보";
     private static final String UNSHIPPED_MARKER_RANGE = UNSHIPPED_SHEET + "!A2:A";
-    private static final int ORDER_CODE_INDEX = 0;
+    private static final String PRODUCT_INFO_SKU_COLUMN = "G";
+    private static final int TITLE_INDEX = 0;
+    private static final int PRODUCT_CODE_INDEX = 1;
     private static final int VENDOR_INDEX = 2;
+    private static final int ORDER_DATE_INDEX = 3;
     private static final int RECIPIENT_NAME_INDEX = 5;
     private static final int RECIPIENT_PHONE_INDEX = 6;
     private static final int REASON_INDEX = 14;
@@ -42,9 +48,10 @@ public class UnshippedRepository {
     private static final int SELLER_FEEDBACK_INDEX = 16;
     private static final int RESULT_INDEX = 17;
     private static final Pattern DATE_MARKER_PATTERN = Pattern.compile("(20\\d{2})\\D+(\\d{1,2})\\D+(\\d{1,2})");
+    private static final Pattern PRODUCT_CODE_PATTERN = Pattern.compile("(?i)\\bGS[0-9A-Z]+\\b");
 
-    public DateSnapshot loadDateSnapshot(String spreadsheetId, Calendar targetDate, String accessToken) throws IOException {
-        if (TextUtils.isEmpty(spreadsheetId)) {
+    public DateSnapshot loadDateSnapshot(SettingsStore.SheetSettings settings, Calendar targetDate, String accessToken) throws IOException {
+        if (settings == null || TextUtils.isEmpty(settings.salesSpreadsheetId)) {
             throw new IOException("미출고 조회용 스프레드시트 ID가 비어 있습니다.");
         }
         if (TextUtils.isEmpty(accessToken)) {
@@ -52,44 +59,67 @@ public class UnshippedRepository {
         }
 
         Calendar normalizedTarget = copyOf(targetDate);
-        JSONObject markerRoot = requestJson("GET", buildValuesUrl(spreadsheetId, UNSHIPPED_MARKER_RANGE), accessToken, null);
+        Calendar today = copyOf(Calendar.getInstance(Locale.KOREA));
+
+        JSONObject markerRoot = requestJson("GET", buildValuesUrl(settings.salesSpreadsheetId, UNSHIPPED_MARKER_RANGE), accessToken, null);
         JSONArray markerValues = markerRoot.optJSONArray("values");
         if (markerValues == null || markerValues.length() == 0) {
             return new DateSnapshot(Collections.emptyList(), Collections.emptyList());
         }
 
-        int markerOffset = findDateMarkerOffset(markerValues, normalizedTarget);
-        if (markerOffset < 0) {
-            return new DateSnapshot(Collections.emptyList(), Collections.emptyList());
-        }
-
-        int nextMarkerOffset = findNextDateMarkerOffset(markerValues, markerOffset);
-        int startRow = markerOffset + 3;
-        int endRow = nextMarkerOffset >= 0 ? nextMarkerOffset + 1 : markerValues.length() + 1;
+        int startRow = findStartRowForSelectedDate(markerValues, normalizedTarget);
+        int endRow = markerValues.length() + 1;
         if (startRow > endRow) {
             return new DateSnapshot(Collections.emptyList(), Collections.emptyList());
         }
 
+        ProductInfoLookup productInfoLookup = loadProductInfoLookup(settings, accessToken);
         String dataRange = UNSHIPPED_SHEET + "!A" + startRow + ":R" + endRow;
-        JSONObject root = requestJson("GET", buildValuesUrl(spreadsheetId, dataRange), accessToken, null);
+        JSONObject root = requestJson("GET", buildValuesUrl(settings.salesSpreadsheetId, dataRange), accessToken, null);
         JSONArray values = root.optJSONArray("values");
         if (values == null || values.length() == 0) {
             return new DateSnapshot(Collections.emptyList(), Collections.emptyList());
         }
 
         List<UnshippedItem> items = new ArrayList<>();
-        Set<String> vendors = new LinkedHashSet<>();
+        Calendar previousMarkerDate = null;
         for (int i = 0; i < values.length(); i++) {
             JSONArray row = values.optJSONArray(i);
+            if (row == null) {
+                continue;
+            }
+
+            Calendar markerDate = parseDateMarker(getCell(row, TITLE_INDEX));
+            if (markerDate != null) {
+                previousMarkerDate = markerDate;
+                continue;
+            }
+
             if (!hasItemContent(row)) {
                 continue;
             }
 
-            String vendor = valueOrNone(getCell(row, VENDOR_INDEX));
+            Calendar actualOrderDate = parseDateCell(getCell(row, ORDER_DATE_INDEX));
+            Calendar displayDate = resolveDisplayDate(actualOrderDate, previousMarkerDate, today);
+            if (displayDate == null) {
+                continue;
+            }
+            if (displayDate.compareTo(normalizedTarget) < 0 || displayDate.compareTo(today) > 0) {
+                continue;
+            }
+
+            String rawTitle = getCell(row, TITLE_INDEX);
+            String productCode = getCell(row, PRODUCT_CODE_INDEX);
+            ProductInfo productInfo = productInfoLookup.find(productCode, rawTitle);
             items.add(new UnshippedItem(
                     startRow + i,
-                    vendor,
-                    getCell(row, ORDER_CODE_INDEX),
+                    formatDateLabel(displayDate),
+                    formatDateSortKey(displayDate),
+                    valueOrNone(getCell(row, VENDOR_INDEX)),
+                    rawTitle,
+                    productCode,
+                    productInfo.orderName,
+                    productInfo.skuLocation,
                     getCell(row, RECIPIENT_NAME_INDEX),
                     getCell(row, RECIPIENT_PHONE_INDEX),
                     getCell(row, REASON_INDEX),
@@ -97,7 +127,15 @@ public class UnshippedRepository {
                     getCell(row, RESULT_INDEX),
                     getCell(row, SELLER_FEEDBACK_INDEX)
             ));
-            vendors.add(vendor);
+        }
+
+        items.sort(Comparator
+                .comparing(UnshippedItem::getDateSortKey)
+                .thenComparingInt(UnshippedItem::getSheetRowNumber));
+
+        Set<String> vendors = new LinkedHashSet<>();
+        for (UnshippedItem item : items) {
+            vendors.add(item.getVendor());
         }
         return new DateSnapshot(new ArrayList<>(vendors), items);
     }
@@ -134,25 +172,85 @@ public class UnshippedRepository {
         requestJson("PUT", url, accessToken, body.toString());
     }
 
-    private int findDateMarkerOffset(JSONArray markerValues, Calendar targetDate) {
+    private int findStartRowForSelectedDate(JSONArray markerValues, Calendar targetDate) {
+        int previousMarkerRow = 1;
         for (int i = 0; i < markerValues.length(); i++) {
             JSONArray row = markerValues.optJSONArray(i);
             Calendar markerDate = parseDateMarker(getCell(row, 0));
-            if (markerDate != null && isSameDay(markerDate, targetDate)) {
-                return i;
+            if (markerDate != null && markerDate.compareTo(targetDate) < 0) {
+                previousMarkerRow = i + 2;
             }
         }
-        return -1;
+        return Math.max(previousMarkerRow + 1, 2);
     }
 
-    private int findNextDateMarkerOffset(JSONArray markerValues, int markerOffset) {
-        for (int i = markerOffset + 1; i < markerValues.length(); i++) {
-            JSONArray row = markerValues.optJSONArray(i);
-            if (parseDateMarker(getCell(row, 0)) != null) {
-                return i;
+    private ProductInfoLookup loadProductInfoLookup(SettingsStore.SheetSettings settings, String accessToken) throws IOException {
+        if (!canLoadProductInfoLookup(settings)) {
+            return ProductInfoLookup.empty();
+        }
+
+        JSONObject productRoot = requestJson("GET", buildValuesUrl(settings.salesSpreadsheetId, settings.range), accessToken, null);
+        JSONArray values = productRoot.optJSONArray("values");
+        if (values == null || values.length() == 0) {
+            return ProductInfoLookup.empty();
+        }
+
+        int rangeStartColumn = getRangeStartColumn(settings.range);
+        int productCodeIndex = getRelativeColumnIndex(settings.productCodeColumn, rangeStartColumn);
+        int orderNameIndex = getRelativeColumnIndex(settings.orderCodeColumn, rangeStartColumn);
+        int skuIndex = getOptionalRelativeColumnIndex(PRODUCT_INFO_SKU_COLUMN, rangeStartColumn);
+
+        Map<String, ProductInfo> byProductCode = new HashMap<>();
+        Map<String, ProductInfo> byOrderName = new HashMap<>();
+        for (int i = 0; i < values.length(); i++) {
+            JSONArray row = values.optJSONArray(i);
+            if (row == null) {
+                continue;
+            }
+
+            String productCode = safeLower(getCell(row, productCodeIndex));
+            String orderName = getCell(row, orderNameIndex);
+            String skuLocation = getCell(row, skuIndex);
+            ProductInfo productInfo = new ProductInfo(orderName, skuLocation);
+
+            if (!TextUtils.isEmpty(productCode) && !byProductCode.containsKey(productCode)) {
+                byProductCode.put(productCode, productInfo);
+            }
+
+            String orderNameKey = safeLower(orderName);
+            if (!TextUtils.isEmpty(orderNameKey) && !byOrderName.containsKey(orderNameKey)) {
+                byOrderName.put(orderNameKey, productInfo);
             }
         }
-        return -1;
+        return new ProductInfoLookup(byProductCode, byOrderName);
+    }
+
+    private boolean canLoadProductInfoLookup(SettingsStore.SheetSettings settings) {
+        return settings != null
+                && !TextUtils.isEmpty(settings.salesSpreadsheetId)
+                && !TextUtils.isEmpty(settings.range)
+                && !TextUtils.isEmpty(settings.productCodeColumn)
+                && !TextUtils.isEmpty(settings.orderCodeColumn);
+    }
+
+    private Calendar resolveDisplayDate(Calendar actualOrderDate, Calendar previousMarkerDate, Calendar today) {
+        if (actualOrderDate != null) {
+            Calendar normalizedActualDate = copyOf(actualOrderDate);
+            if (normalizedActualDate.compareTo(today) > 0) {
+                return null;
+            }
+            return normalizedActualDate;
+        }
+        if (previousMarkerDate == null) {
+            return null;
+        }
+
+        Calendar inferredDate = copyOf(previousMarkerDate);
+        inferredDate.add(Calendar.DATE, 1);
+        if (inferredDate.compareTo(today) > 0) {
+            return copyOf(today);
+        }
+        return inferredDate;
     }
 
     private Calendar parseDateMarker(String rawValue) {
@@ -160,18 +258,20 @@ public class UnshippedRepository {
             return null;
         }
 
-        String value = rawValue.trim();
-        Matcher matcher = DATE_MARKER_PATTERN.matcher(value);
-        if (matcher.find()) {
-            try {
-                int year = Integer.parseInt(matcher.group(1));
-                int month = Integer.parseInt(matcher.group(2));
-                int day = Integer.parseInt(matcher.group(3));
-                return buildCalendar(year, month, day);
-            } catch (NumberFormatException ignored) {
-            }
+        Matcher matcher = DATE_MARKER_PATTERN.matcher(rawValue.trim());
+        if (!matcher.find()) {
+            return null;
         }
-        return parseDateCell(value);
+
+        try {
+            return buildCalendar(
+                    Integer.parseInt(matcher.group(1)),
+                    Integer.parseInt(matcher.group(2)),
+                    Integer.parseInt(matcher.group(3))
+            );
+        } catch (NumberFormatException exception) {
+            return null;
+        }
     }
 
     private Calendar parseDateCell(String rawDate) {
@@ -226,9 +326,62 @@ public class UnshippedRepository {
         return false;
     }
 
-    private boolean isSameDay(Calendar left, Calendar right) {
-        return left.get(Calendar.YEAR) == right.get(Calendar.YEAR)
-                && left.get(Calendar.DAY_OF_YEAR) == right.get(Calendar.DAY_OF_YEAR);
+    private String formatDateLabel(Calendar calendar) {
+        return new SimpleDateFormat("M월 d일", Locale.KOREA).format(calendar.getTime());
+    }
+
+    private String formatDateSortKey(Calendar calendar) {
+        return new SimpleDateFormat("yyyy-MM-dd", Locale.KOREA).format(calendar.getTime());
+    }
+
+    private int getRangeStartColumn(String range) throws IOException {
+        String working = range;
+        int bangIndex = working.indexOf('!');
+        if (bangIndex >= 0) {
+            working = working.substring(bangIndex + 1);
+        }
+
+        String start = working.split(":")[0];
+        Matcher matcher = Pattern.compile("([A-Za-z]+)").matcher(start);
+        if (!matcher.find()) {
+            throw new IOException("조회 범위를 해석하지 못했습니다. 예: 상품정보!A2:M");
+        }
+        return columnToIndex(matcher.group(1));
+    }
+
+    private int getRelativeColumnIndex(String columnLabel, int rangeStartColumn) throws IOException {
+        if (TextUtils.isEmpty(columnLabel)) {
+            return -1;
+        }
+
+        int absoluteIndex = columnToIndex(columnLabel);
+        int relativeIndex = absoluteIndex - rangeStartColumn;
+        if (relativeIndex < 0) {
+            throw new IOException("컬럼 설정이 조회 범위보다 앞에 있습니다. 범위와 컬럼 문자를 확인하세요.");
+        }
+        return relativeIndex;
+    }
+
+    private int getOptionalRelativeColumnIndex(String columnLabel, int rangeStartColumn) throws IOException {
+        if (TextUtils.isEmpty(columnLabel)) {
+            return -1;
+        }
+
+        int absoluteIndex = columnToIndex(columnLabel);
+        return Math.max(absoluteIndex - rangeStartColumn, -1);
+    }
+
+    private int columnToIndex(String columnLabel) throws IOException {
+        String normalized = columnLabel.trim().toUpperCase(Locale.ROOT);
+        if (!normalized.matches("[A-Z]+")) {
+            throw new IOException("컬럼 문자는 A, B, C 같은 형식으로 입력하세요.");
+        }
+
+        int value = 0;
+        for (int i = 0; i < normalized.length(); i++) {
+            value = (value * 26) + (normalized.charAt(i) - 'A' + 1);
+        }
+        return value - 1;
     }
 
     private String buildValuesUrl(String spreadsheetId, String range) {
@@ -327,6 +480,10 @@ public class UnshippedRepository {
         return TextUtils.isEmpty(value) ? "없음" : value.trim();
     }
 
+    private String safeLower(String value) {
+        return value == null ? "" : value.trim().toLowerCase(Locale.ROOT);
+    }
+
     private String readStream(InputStream stream) throws IOException {
         if (stream == null) {
             return "";
@@ -373,6 +530,72 @@ public class UnshippedRepository {
             return TextUtils.isEmpty(message) ? body : message;
         } catch (JSONException ignored) {
             return body;
+        }
+    }
+
+    private static final class ProductInfoLookup {
+        private final Map<String, ProductInfo> byProductCode;
+        private final Map<String, ProductInfo> byOrderName;
+
+        private ProductInfoLookup(Map<String, ProductInfo> byProductCode, Map<String, ProductInfo> byOrderName) {
+            this.byProductCode = byProductCode;
+            this.byOrderName = byOrderName;
+        }
+
+        private static ProductInfoLookup empty() {
+            return new ProductInfoLookup(Collections.emptyMap(), Collections.emptyMap());
+        }
+
+        private ProductInfo find(String productCode, String rawTitle) {
+            ProductInfo match = findByProductCode(productCode);
+            if (match != null) {
+                return match;
+            }
+
+            match = findByProductCode(extractEmbeddedProductCode(rawTitle));
+            if (match != null) {
+                return match;
+            }
+
+            String rawTitleKey = rawTitle == null ? "" : rawTitle.trim().toLowerCase(Locale.ROOT);
+            if (!TextUtils.isEmpty(rawTitleKey)) {
+                match = byOrderName.get(rawTitleKey);
+                if (match != null) {
+                    return match;
+                }
+            }
+            return ProductInfo.EMPTY;
+        }
+
+        private ProductInfo findByProductCode(String productCode) {
+            String productCodeKey = productCode == null ? "" : productCode.trim().toLowerCase(Locale.ROOT);
+            if (TextUtils.isEmpty(productCodeKey)) {
+                return null;
+            }
+            return byProductCode.get(productCodeKey);
+        }
+
+        private String extractEmbeddedProductCode(String rawTitle) {
+            if (TextUtils.isEmpty(rawTitle)) {
+                return "";
+            }
+            Matcher matcher = PRODUCT_CODE_PATTERN.matcher(rawTitle);
+            if (!matcher.find()) {
+                return "";
+            }
+            return matcher.group();
+        }
+    }
+
+    private static final class ProductInfo {
+        private static final ProductInfo EMPTY = new ProductInfo("", "");
+
+        private final String orderName;
+        private final String skuLocation;
+
+        private ProductInfo(String orderName, String skuLocation) {
+            this.orderName = orderName == null ? "" : orderName.trim();
+            this.skuLocation = skuLocation == null ? "" : skuLocation.trim();
         }
     }
 

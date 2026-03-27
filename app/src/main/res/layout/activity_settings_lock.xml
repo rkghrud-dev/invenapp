@@ -10,35 +10,35 @@
         android:layout_height="match_parent"
         android:gravity="center"
         android:orientation="vertical"
-        android:padding="20dp">
+        android:padding="16dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@drawable/bg_card_tinted"
             android:orientation="vertical"
-            android:padding="24dp">
+            android:padding="18dp">
 
             <TextView
                 android:id="@+id/lock_title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textColor="?attr/paletteTextPrimary"
-                android:textSize="28sp"
+                android:textSize="24sp"
                 android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/lock_summary"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
                 android:textColor="?attr/paletteTextSecondary"
-                android:textSize="14sp" />
+                android:textSize="14sp"
+                android:visibility="gone" />
 
             <EditText
                 android:id="@+id/password_input"
                 style="@style/FormInput"
-                android:layout_marginTop="20dp"
+                android:layout_marginTop="14dp"
                 android:hint="@string/settings_lock_password_hint"
                 android:imeOptions="actionDone"
                 android:inputType="textPassword" />

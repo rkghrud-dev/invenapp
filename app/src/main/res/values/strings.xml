@@ -19,6 +19,7 @@
     <string name="home_options_subtitle">다크모드처럼 화면 표시 중심 옵션을 간단히 관리합니다.</string>
     <string name="home_future_subtitle">다음 단계에서 추가할 기능 자리입니다.</string>
     <string name="home_future_message">이 메뉴는 추후 개발 예정입니다.</string>
+    <string name="home_version_label">ver %1$s</string>
     <string name="inventory_title">재고관리</string>
     <string name="inventory_subtitle">상품코드나 주문코드, 상품명으로 검색해 현재 재고와 오늘 판매, 실재고를 함께 확인합니다.</string>
     <string name="search_section_title">빠른 조회</string>
@@ -74,21 +75,21 @@
     <string name="unshipped_filter_title">조회 조건</string>
     <string name="unshipped_date_label">기준 날짜</string>
     <string name="unshipped_date_button">날짜 선택</string>
-    <string name="unshipped_load_today_button">선택 날짜 미출고 로드</string>
+    <string name="unshipped_load_today_button">선택 날짜 이후 미출고 로드</string>
     <string name="unshipped_vendor_label">발주사</string>
     <string name="unshipped_query_button">발주사 결과 조회</string>
     <string name="unshipped_results_title">미출고 결과</string>
     <string name="unshipped_empty_results">%1$s 조건에 맞는 미출고 정보가 없습니다.</string>
-    <string name="unshipped_summary_idle">%1$s 날짜를 선택한 뒤 로드 버튼을 누르세요.</string>
-    <string name="unshipped_summary_loaded">%1$s · 발주사 %2$d개</string>
-    <string name="unshipped_summary_vendor">%1$s · %2$s · %3$d건</string>
-    <string name="unshipped_summary_no_items">%1$s · 미출고 없음</string>
-    <string name="unshipped_status_idle">%1$s 날짜 구분행을 불러오려면 로드 버튼을 누르세요.</string>
-    <string name="unshipped_status_loading">%1$s 구간 미출고 정보를 불러오는 중입니다.</string>
-    <string name="unshipped_status_loaded">%1$s 구간 발주사 %2$d개를 불러왔습니다.</string>
-    <string name="unshipped_status_no_today">%1$s 날짜 구분행에 맞는 미출고 정보가 없습니다.</string>
+    <string name="unshipped_summary_idle">%1$s 이후 날짜를 보려면 로드 버튼을 누르세요.</string>
+    <string name="unshipped_summary_loaded">%1$s 이후 · 발주사 %2$d개</string>
+    <string name="unshipped_summary_vendor">%1$s 이후 · %2$s · %3$d건</string>
+    <string name="unshipped_summary_no_items">%1$s 이후 · 미출고 없음</string>
+    <string name="unshipped_status_idle">%1$s 이후 데이터를 불러오려면 로드 버튼을 누르세요.</string>
+    <string name="unshipped_status_loading">%1$s 이후 미출고 정보를 불러오는 중입니다.</string>
+    <string name="unshipped_status_loaded">%1$s 이후 구간 발주사 %2$d개를 불러왔습니다.</string>
+    <string name="unshipped_status_no_today">%1$s 이후 날짜 구분행에 맞는 미출고 정보가 없습니다.</string>
     <string name="unshipped_status_need_vendor">발주사를 먼저 선택하세요.</string>
-    <string name="unshipped_status_result_count">%1$s 날짜 · %2$s 발주사 기준 %3$d건을 찾았습니다.</string>
+    <string name="unshipped_status_result_count">%1$s 이후 · %2$s 발주사 기준 %3$d건을 찾았습니다.</string>
     <string name="unshipped_status_no_vendor_result">선택한 발주사에 해당하는 미출고 정보가 없습니다.</string>
     <string name="unshipped_status_sheet_not_ready">미출고 조회용 스프레드시트 ID를 먼저 확인해 주세요.</string>
     <string name="unshipped_status_need_feedback">저장할 판매자 피드백을 입력하세요.</string>
@@ -96,6 +97,7 @@
     <string name="unshipped_status_saved">판매자 피드백을 저장했습니다.</string>
     <string name="unshipped_none">없음</string>
     <string name="unshipped_order_code_fallback">주문코드 없음</string>
+    <string name="unshipped_sku_line">SKU 위치  %1$s</string>
     <string name="unshipped_reason_line">미출고 이유  %1$s</string>
     <string name="unshipped_supply_memo_line">샤플라이메모  %1$s</string>
     <string name="unshipped_result_line">결과  %1$s</string>
@@ -215,3 +217,5 @@
     <string name="result_price_unavailable">없음</string>
     <string name="result_unavailable_value">계산 불가</string>
 </resources>
+
+

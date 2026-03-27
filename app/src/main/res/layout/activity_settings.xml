@@ -11,7 +11,7 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:paddingLeft="20dp"
-        android:paddingTop="24dp"
+        android:paddingTop="16dp"
         android:paddingRight="20dp"
         android:paddingBottom="24dp">
 
@@ -20,31 +20,30 @@
             android:layout_height="wrap_content"
             android:background="@drawable/bg_card_tinted"
             android:orientation="vertical"
-            android:padding="24dp">
+            android:padding="18dp">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/admin_title"
                 android:textColor="?attr/paletteTextPrimary"
-                android:textSize="30sp"
+                android:textSize="26sp"
                 android:textStyle="bold" />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
                 android:text="@string/admin_subtitle"
                 android:textColor="?attr/paletteTextSecondary"
-                android:textSize="14sp" />
+                android:textSize="14sp"
+                android:visibility="gone" />
 
         </LinearLayout>
-
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="12dp"
             android:background="@drawable/bg_card_primary"
             android:orientation="vertical"
             android:padding="20dp">
@@ -94,7 +93,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="12dp"
             android:background="@drawable/bg_card_primary"
             android:orientation="vertical"
             android:padding="20dp">
@@ -168,15 +167,8 @@
                     android:textColor="?attr/paletteTextSecondary"
                     android:textSize="14sp" />
 
-                <TextView
-                    style="@style/FormLabel"
-                    android:layout_marginTop="18dp"
-                    android:text="@string/label_ranking_spreadsheet_id" />
-
-                <EditText
-                    android:id="@+id/ranking_spreadsheet_id_input"
-                    style="@style/FormInput"
-                    android:hint="@string/hint_spreadsheet_id" />
+                <TextView style="@style/FormLabel" android:layout_marginTop="18dp" android:text="@string/label_ranking_spreadsheet_id" />
+                <EditText android:id="@+id/ranking_spreadsheet_id_input" style="@style/FormInput" android:hint="@string/hint_spreadsheet_id" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -217,10 +209,7 @@
 
                 </LinearLayout>
 
-                <TextView
-                    style="@style/FormLabel"
-                    android:layout_marginTop="18dp"
-                    android:text="@string/label_reminder_time" />
+                <TextView style="@style/FormLabel" android:layout_marginTop="18dp" android:text="@string/label_reminder_time" />
 
                 <EditText
                     android:id="@+id/reminder_time_input"
@@ -261,7 +250,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="12dp"
             android:background="@drawable/bg_card_primary"
             android:orientation="vertical"
             android:padding="20dp">
@@ -273,60 +262,18 @@
                 android:textColor="?attr/paletteTextSecondary"
                 android:textSize="14sp" />
 
-            <TextView
-                style="@style/FormLabel"
-                android:layout_marginTop="18dp"
-                android:text="@string/label_spreadsheet_id" />
-
-            <EditText
-                android:id="@+id/spreadsheet_id_input"
-                style="@style/FormInput"
-                android:hint="@string/hint_spreadsheet_id" />
-
-            <TextView
-                style="@style/FormLabel"
-                android:text="@string/label_range" />
-
-            <EditText
-                android:id="@+id/range_input"
-                style="@style/FormInput"
-                android:hint="@string/hint_range" />
-
-            <TextView
-                style="@style/FormLabel"
-                android:text="@string/label_product_code_column" />
-
-            <EditText
-                android:id="@+id/product_code_column_input"
-                style="@style/FormInput"
-                android:hint="@string/hint_column" />
-
-            <TextView
-                style="@style/FormLabel"
-                android:text="@string/label_order_code_column" />
-
-            <EditText
-                android:id="@+id/order_code_column_input"
-                style="@style/FormInput"
-                android:hint="@string/hint_column_optional" />
-
-            <TextView
-                style="@style/FormLabel"
-                android:text="@string/label_product_name_column" />
-
-            <EditText
-                android:id="@+id/product_name_column_input"
-                style="@style/FormInput"
-                android:hint="@string/hint_column_optional" />
-
-            <TextView
-                style="@style/FormLabel"
-                android:text="@string/label_stock_column" />
-
-            <EditText
-                android:id="@+id/stock_column_input"
-                style="@style/FormInput"
-                android:hint="@string/hint_column" />
+            <TextView style="@style/FormLabel" android:layout_marginTop="18dp" android:text="@string/label_spreadsheet_id" />
+            <EditText android:id="@+id/spreadsheet_id_input" style="@style/FormInput" android:hint="@string/hint_spreadsheet_id" />
+            <TextView style="@style/FormLabel" android:text="@string/label_range" />
+            <EditText android:id="@+id/range_input" style="@style/FormInput" android:hint="@string/hint_range" />
+            <TextView style="@style/FormLabel" android:text="@string/label_product_code_column" />
+            <EditText android:id="@+id/product_code_column_input" style="@style/FormInput" android:hint="@string/hint_column" />
+            <TextView style="@style/FormLabel" android:text="@string/label_order_code_column" />
+            <EditText android:id="@+id/order_code_column_input" style="@style/FormInput" android:hint="@string/hint_column_optional" />
+            <TextView style="@style/FormLabel" android:text="@string/label_product_name_column" />
+            <EditText android:id="@+id/product_name_column_input" style="@style/FormInput" android:hint="@string/hint_column_optional" />
+            <TextView style="@style/FormLabel" android:text="@string/label_stock_column" />
+            <EditText android:id="@+id/stock_column_input" style="@style/FormInput" android:hint="@string/hint_column" />
 
             <TextView
                 android:layout_width="match_parent"
@@ -336,42 +283,14 @@
                 android:textColor="?attr/paletteTextSecondary"
                 android:textSize="14sp" />
 
-            <TextView
-                style="@style/FormLabel"
-                android:layout_marginTop="18dp"
-                android:text="@string/label_sales_spreadsheet_id" />
-
-            <EditText
-                android:id="@+id/sales_spreadsheet_id_input"
-                style="@style/FormInput"
-                android:hint="@string/hint_spreadsheet_id" />
-
-            <TextView
-                style="@style/FormLabel"
-                android:text="@string/label_sales_range" />
-
-            <EditText
-                android:id="@+id/sales_range_input"
-                style="@style/FormInput"
-                android:hint="@string/hint_sales_range" />
-
-            <TextView
-                style="@style/FormLabel"
-                android:text="@string/label_sales_product_code_column" />
-
-            <EditText
-                android:id="@+id/sales_product_code_column_input"
-                style="@style/FormInput"
-                android:hint="@string/hint_column" />
-
-            <TextView
-                style="@style/FormLabel"
-                android:text="@string/label_sales_quantity_column" />
-
-            <EditText
-                android:id="@+id/sales_quantity_column_input"
-                style="@style/FormInput"
-                android:hint="@string/hint_column" />
+            <TextView style="@style/FormLabel" android:layout_marginTop="18dp" android:text="@string/label_sales_spreadsheet_id" />
+            <EditText android:id="@+id/sales_spreadsheet_id_input" style="@style/FormInput" android:hint="@string/hint_spreadsheet_id" />
+            <TextView style="@style/FormLabel" android:text="@string/label_sales_range" />
+            <EditText android:id="@+id/sales_range_input" style="@style/FormInput" android:hint="@string/hint_sales_range" />
+            <TextView style="@style/FormLabel" android:text="@string/label_sales_product_code_column" />
+            <EditText android:id="@+id/sales_product_code_column_input" style="@style/FormInput" android:hint="@string/hint_column" />
+            <TextView style="@style/FormLabel" android:text="@string/label_sales_quantity_column" />
+            <EditText android:id="@+id/sales_quantity_column_input" style="@style/FormInput" android:hint="@string/hint_column" />
 
             <LinearLayout
                 android:layout_width="match_parent"
