@@ -4,6 +4,7 @@ public class InventoryItem {
     private final String productCode;
     private final String orderCode;
     private final String productName;
+    private final String skuLocation;
     private final String importPrice;
     private final String supplyPrice;
     private final String retailPrice;
@@ -17,6 +18,7 @@ public class InventoryItem {
             String productCode,
             String orderCode,
             String productName,
+            String skuLocation,
             String importPrice,
             String supplyPrice,
             String retailPrice,
@@ -29,6 +31,7 @@ public class InventoryItem {
         this.productCode = productCode;
         this.orderCode = orderCode;
         this.productName = productName;
+        this.skuLocation = skuLocation;
         this.importPrice = importPrice;
         this.supplyPrice = supplyPrice;
         this.retailPrice = retailPrice;
@@ -49,6 +52,10 @@ public class InventoryItem {
 
     public String getProductName() {
         return productName;
+    }
+
+    public String getSkuLocation() {
+        return skuLocation;
     }
 
     public String getImportPrice() {
@@ -83,4 +90,3 @@ public class InventoryItem {
         return score;
     }
 }
-

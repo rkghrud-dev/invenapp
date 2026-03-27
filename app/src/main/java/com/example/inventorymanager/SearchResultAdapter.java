@@ -96,6 +96,7 @@ public class SearchResultAdapter extends BaseAdapter {
         ));
         holder.productCode.setText(buildLabeledText("상품코드", item.getProductCode()));
         holder.orderCode.setText(buildLabeledText("주문코드", item.getOrderCode()));
+        holder.skuLocation.setText(buildLabeledText("SKU 위치", item.getSkuLocation()));
         return convertView;
     }
 
@@ -150,6 +151,7 @@ public class SearchResultAdapter extends BaseAdapter {
         private final TextView retailPrice;
         private final TextView productCode;
         private final TextView orderCode;
+        private final TextView skuLocation;
 
         private ViewHolder(View root) {
             productName = root.findViewById(R.id.item_product_name);
@@ -162,7 +164,7 @@ public class SearchResultAdapter extends BaseAdapter {
             retailPrice = root.findViewById(R.id.item_retail_price);
             productCode = root.findViewById(R.id.item_product_code);
             orderCode = root.findViewById(R.id.item_order_code);
+            skuLocation = root.findViewById(R.id.item_sku_location);
         }
     }
 }
-

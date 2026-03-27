@@ -28,6 +28,7 @@ import java.util.regex.Pattern;
 public class SheetsRepository {
     private static final int CONNECT_TIMEOUT_MS = 10000;
     private static final int READ_TIMEOUT_MS = 10000;
+    private static final String SKU_LOCATION_COLUMN = "G";
 
     public List<InventoryItem> search(SettingsStore.SheetSettings settings, String query, String accessToken) throws IOException {
         if (!settings.isReady()) {
@@ -48,10 +49,13 @@ public class SheetsRepository {
             return matches;
         }
 
+        Map<String, String> skuLocationByCode = loadSkuLocationByCode(settings, accessToken);
+        List<InventoryItem> skuAppliedMatches = applySkuLocations(matches, skuLocationByCode);
+
         Map<String, BigDecimal> soldQuantityByCode = settings.isSalesReady()
                 ? loadSoldQuantityByCode(settings, accessToken)
                 : Collections.emptyMap();
-        return applySoldQuantities(matches, soldQuantityByCode);
+        return applySoldQuantities(skuAppliedMatches, soldQuantityByCode);
     }
 
     private String requestSheetValues(String spreadsheetId, String range, String accessToken) throws IOException {
@@ -136,6 +140,7 @@ public class SheetsRepository {
                         productCode,
                         orderCode,
                         productName,
+                        "",
                         importPrice,
                         supplyPrice,
                         retailPrice,
@@ -152,6 +157,78 @@ public class SheetsRepository {
         } catch (JSONException exception) {
             throw new IOException("시트 응답 형식을 해석하지 못했습니다.", exception);
         }
+    }
+
+    private Map<String, String> loadSkuLocationByCode(SettingsStore.SheetSettings settings, String accessToken) throws IOException {
+        if (TextUtils.isEmpty(settings.salesSpreadsheetId) || TextUtils.isEmpty(settings.range)) {
+            return Collections.emptyMap();
+        }
+
+        String responseBody = requestSheetValues(settings.salesSpreadsheetId, settings.range, accessToken);
+        try {
+            JSONObject root = new JSONObject(responseBody);
+            JSONArray values = root.optJSONArray("values");
+            if (values == null || values.length() == 0) {
+                return Collections.emptyMap();
+            }
+
+            int rangeStartColumn = getRangeStartColumn(settings.range);
+            int productCodeIndex = getRelativeColumnIndex(settings.productCodeColumn, rangeStartColumn);
+            int skuLocationIndex = getOptionalRelativeColumnIndex(SKU_LOCATION_COLUMN, rangeStartColumn);
+
+            Map<String, String> skuLocationByCode = new HashMap<>();
+            for (int i = 0; i < values.length(); i++) {
+                JSONArray row = values.optJSONArray(i);
+                if (row == null) {
+                    continue;
+                }
+
+                String productCode = safeLower(getCell(row, productCodeIndex));
+                String skuLocation = getCell(row, skuLocationIndex);
+                if (TextUtils.isEmpty(productCode) || TextUtils.isEmpty(skuLocation)) {
+                    continue;
+                }
+                if (!skuLocationByCode.containsKey(productCode)) {
+                    skuLocationByCode.put(productCode, skuLocation);
+                }
+            }
+            return skuLocationByCode;
+        } catch (JSONException exception) {
+            throw new IOException("SKU 위치 시트 응답 형식을 해석하지 못했습니다.", exception);
+        }
+    }
+
+    private List<InventoryItem> applySkuLocations(List<InventoryItem> items, Map<String, String> skuLocationByCode) {
+        if (items == null || items.isEmpty() || skuLocationByCode.isEmpty()) {
+            return items;
+        }
+
+        List<InventoryItem> enrichedItems = new ArrayList<>(items.size());
+        for (InventoryItem item : items) {
+            String skuLocation = "";
+            if (!TextUtils.isEmpty(item.getProductCode())) {
+                String mappedValue = skuLocationByCode.get(safeLower(item.getProductCode()));
+                if (mappedValue != null) {
+                    skuLocation = mappedValue;
+                }
+            }
+
+            enrichedItems.add(new InventoryItem(
+                    item.getProductCode(),
+                    item.getOrderCode(),
+                    item.getProductName(),
+                    skuLocation,
+                    item.getImportPrice(),
+                    item.getSupplyPrice(),
+                    item.getRetailPrice(),
+                    item.getStockQuantity(),
+                    item.getTodaySoldQuantity(),
+                    item.getActualStockQuantity(),
+                    item.getMatchReason(),
+                    item.getScore()
+            ));
+        }
+        return enrichedItems;
     }
 
     private Map<String, BigDecimal> loadSoldQuantityByCode(SettingsStore.SheetSettings settings, String accessToken) throws IOException {
@@ -208,6 +285,7 @@ public class SheetsRepository {
                     item.getProductCode(),
                     item.getOrderCode(),
                     item.getProductName(),
+                    item.getSkuLocation(),
                     item.getImportPrice(),
                     item.getSupplyPrice(),
                     item.getRetailPrice(),
@@ -414,4 +492,3 @@ public class SheetsRepository {
         }
     }
 }
-
